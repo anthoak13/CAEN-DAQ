@@ -11,8 +11,8 @@
 # Include the Makefile for ROOT-based projects
 RC:=root-config
 ROOTSYS:=$(shell $(RC) --prefix)
-ROOTMAKE:=$(ROOTSYS)/etc/Makefile.arch
-include $(ROOTMAKE)
+#ROOTMAKE:=$(ROOTSYS)/etc/Makefile.arch
+#cd /r	include $(ROOTMAKE)
 
 # Specify the the binary, build, and source directories
 BUILDDIR = build
