@@ -85,6 +85,7 @@ $(BUILDDIR)/%_dictionary.cxx : $(INCLDIR)/%.h Linkdef.h
 	@echo  "\nGenerating ROOT dictionary '$@' ..."
 	rootcling -f $@  $^
 	@cp $(BUILDDIR)/*.pcm ./
+	@rm $(BUILDDIR)/*.pcm
 
 #$(ROOTDICT) : $(INCLS) Linkdef.h
 #	echo "Generating ROOT dictionary"
