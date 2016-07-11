@@ -153,11 +153,11 @@ private:
     TGComboBox *fCBHardware, *fCBFileType;
     TGLayoutHints *fLHardware;
     //Chan
-    TGHorizontalFrame *f11, *f12;
-    TGVerticalFrame *f13, *f14;
+    TGHorizontalFrame *f11, *f12, *f13, *f14;
+    TGVerticalFrame *f15;
     TGTextButton *fBAddCh;
-    TGNumberEntryField *fNEntryCh;
-    TGComboBox *fCBChan;
+    TGNumberEntryField *fNEntryCh, *fNEntryOffset, *fNEntryChThreshold;
+    TGComboBox *fCBChan, *fCBChTrig;
     TGCheckButton *fBEnabled;
 
     WavedumpConfig config;
@@ -861,19 +861,47 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     fNEntryCh = new TGNumberEntryField(f11, -1, 0, TGNumberFormat::EStyle::kNESInteger,
 			       TGNumberFormat::EAttribute::kNEANonNegative);
     fNEntryCh->Resize(20, fNEntryCh->GetDefaultHeight());
-    f13  = new TGVerticalFrame(f11);
-    fCBChan = new TGComboBox(f13);
+    f15  = new TGVerticalFrame(f11);
+    fCBChan = new TGComboBox(f15);
+    fCBChan->AddEntry("Global", 0);
     fCBChan->Resize(60, 20);
-    f13->AddFrame(new TGLabel(f13, "Selected"), new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-    f13->AddFrame(fCBChan, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
-    f11->AddFrame(f13, new TGLayoutHints(kLHintsNormal, 2, 10, 0, 2));
+    f15->AddFrame(new TGLabel(f15, "Selected"), new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
+    f15->AddFrame(fCBChan, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
+    f11->AddFrame(f15, new TGLayoutHints(kLHintsNormal, 2, 10, 0, 2));
     f11->AddFrame(fBAddCh, new TGLayoutHints(kLHintsNormal, 2, 0, 13, 2));
     f11->AddFrame(fNEntryCh, new TGLayoutHints(kLHintsNormal, 0, 2, 13, 2));
     f12 = new TGHorizontalFrame(fChannels);
+    f13 = new TGHorizontalFrame(fChannels);
+    f14 = new TGHorizontalFrame(fChannels);
     TGLayoutHints *fLHintsCh = new TGLayoutHints(kLHintsNormal, 2, 2, 2, 2);
-//    Add all of the channel things
-    //f12->AddFrame(fB
+    //Add all of the channel things
+    fNEntryOffset = new TGNumberEntryField(f12, -1, 0, TGNumberFormat::EStyle::kNESReal,
+					   TGNumberFormat::EAttribute::kNEAAnyNumber,
+					   TGNumberFormat::ELimit::kNELLimitMinMax, -50, 50);
+    fNEntryOffset->Resize(50, fNEntryOffset->GetDefaultHeight());
+    f12->AddFrame(fNEntryOffset, fLHardware);
+    f12->AddFrame(new TGLabel(f12, "DC Offset"), fLHardware);
+    fNEntryChThreshold = new TGNumberEntryField(f13, -1, 0, TGNumberFormat::EStyle::kNESInteger,
+					   TGNumberFormat::EAttribute::kNEANonNegative,
+					   TGNumberFormat::ELimit::kNELLimitMinMax, 0, 65535);
+    fNEntryChThreshold->Resize(50, fNEntryChThreshold->GetDefaultHeight());
+    f13->AddFrame(fNEntryChThreshold, fLHardware);
+    f13->AddFrame(new TGLabel(f13, "Trigger Threshold"), fLHardware);
+
+    fCBChTrig = new TGComboBox(f14);
+    fCBChTrig->AddEntry("DISABLED", 0);
+    fCBChTrig->AddEntry("ACQUISITION", 1);
+    fCBChTrig->AddEntry("ACQ & TRGOUT", 2);
+    fCBChTrig->Resize(100, 20);
+    f14->AddFrame(fCBChTrig, fLHardware);
+    f14->AddFrame( new TGLabel(f14, "Channel Trigger"), new TGLayoutHints(kLHintsNormal, 2,54,3,0));
+
+    //Add everything to group frame
     fChannels->AddFrame(f11, fLHardware);
+    fChannels->AddFrame(fBEnabled = new TGCheckButton(fChannels, "Enabled"), fLHardware);
+    fChannels->AddFrame(f12, fLHardware);
+    fChannels->AddFrame(f13, fLHardware);
+    fChannels->AddFrame(f14, fLHardware);
 
     
     fMain->AddFrame(f1, fLHardware);
