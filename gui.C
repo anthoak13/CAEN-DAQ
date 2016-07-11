@@ -894,7 +894,7 @@ void WaveConfigPopout::CloseWindow(){ delete this; }
 
 void gui()
 {
-    gInterpreter->AddIncludePath("/home/adam/Documents/reu/newDAQ/molly");
+    gSystem->Load("libMathMore.so");
     new MainFrame(gClient->GetRoot(), 400, 220);
 }
 
