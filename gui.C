@@ -20,6 +20,15 @@ const char *fLabel[] = {
     "Scaling",
     "Threshold"};
 
+const char *fLabelRight[] = {
+    "GNU Plot path",
+    "External trigger",
+    "Logic",
+    "Record length",
+    "Max events in buffer",
+    "Event post trigger",
+    "Inturrupt"};
+
 const char *drawLabel[] = {
     "signal",
     "trap",
@@ -145,6 +154,7 @@ class WaveConfigPopout {
 
 private:
     TGTransientFrame *fMain;
+    TGHorizontalFrame *f0;
     TGGroupFrame *fAdcOutput, *fChannels;
     TGHorizontalFrame *fHardware, *fFile, *fHardwareLabel;
     TGVerticalFrame *f2, *f1;
@@ -159,8 +169,17 @@ private:
     TGNumberEntryField *fNEntryCh, *fNEntryOffset, *fNEntryChThreshold;
     TGComboBox *fCBChan, *fCBChTrig;
     TGCheckButton *fBEnabled;
+    //Misc
+    TGGroupFrame *f21;
+    TGComboBox *fCBLogic, *fCBExternalTrig;
+    TGTextEntry *fTEntryGnuPlot;
+    TGHorizontalFrame *fRight[7];
+    TGNumberEntryField *fNEntryRight[4];
 
+    TGTextButton *bOk, *bCancel;
+    TGHorizontalFrame *fButtons;
     WavedumpConfig config;
+    TString path;
 
 public:
     WaveConfigPopout(const TGWindow *p, const TGWindow *main, MainFrame *mainFrame);
@@ -168,6 +187,8 @@ public:
     void CloseWindow();
     void DoOk();
     void DoCancel();
+    void LoadConfig();
+    void WriteConfig();
 
 };
     
@@ -790,14 +811,14 @@ void DAQPopout::DoCancel()
 
 WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, MainFrame *mainFrame)
 {
-    fMain = new TGTransientFrame(p, main, 10, 10, kHorizontalFrame);
+    fMain = new TGTransientFrame(p, main, 10, 10, kVerticalFrame);
     fMain->Connect("CloseWindow()", "WaveConfigPopout", this, "CloseWindow()");
     fMain->DontCallClose();
 
     //Layout hints
     fLHardware = new TGLayoutHints(kLHintsNormal, 2,2,3,0);
-    
-    f1 = new TGVerticalFrame(fMain);
+    f0 = new TGHorizontalFrame(fMain);
+    f1 = new TGVerticalFrame(f0);
     fAdcOutput = new TGGroupFrame(f1, "ADC Output", kVerticalFrame);
     fHardware = new TGHorizontalFrame(fAdcOutput);
     fFile = new TGHorizontalFrame(fAdcOutput);
@@ -903,11 +924,60 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     fChannels->AddFrame(f13, fLHardware);
     fChannels->AddFrame(f14, fLHardware);
 
+
+    //Create vertical frame for right half
+    f21 = new TGGroupFrame(f0, "Misc", kVerticalFrame);
+    TGLayoutHints *labelHint = new TGLayoutHints(kLHintsTop | kLHintsLeft, 2, 3, 5, 5);
+    for(int i = 0; i < 7; i++)
+    {
+	fRight[i] = new TGHorizontalFrame(f21);
+	fRight[i]->AddFrame(new TGLabel(fRight[i], fLabelRight[i]), labelHint);
+	f21->AddFrame(fRight[i], fLHardware);
+    }
+    fRight[0]->AddFrame(fTEntryGnuPlot = new TGTextEntry(fRight[0], path), new TGLayoutHints(kLHintsNormal, 3, 0, 0, 0));
+    fTEntryGnuPlot->SetWidth(150);
     
-    fMain->AddFrame(f1, fLHardware);
+    fCBExternalTrig = new TGComboBox(fRight[1]);
+    fCBExternalTrig->AddEntry("DISABLED", 0);
+    fCBExternalTrig->AddEntry("ACQUISITION", 1);
+    fCBExternalTrig->AddEntry("ACQ & TRGOUT", 2);
+    fCBExternalTrig->Resize(100, 20);
+    fRight[1]->AddFrame(fCBExternalTrig, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
+
+    fCBLogic = new TGComboBox(fRight[2]);
+    fCBLogic->AddEntry("NIM", 0);
+    fCBLogic->AddEntry("TTL", 0);
+    fCBLogic->Resize(50, 20);
+    fRight[2]->AddFrame(fCBLogic, new TGLayoutHints(kLHintsNormal, 45, 0, 0, 0));
+
+    for(int i = 3; i < 7; i++)
+    {
+	fNEntryRight[i-3] = new TGNumberEntryField(fRight[i], -1, 0, TGNumberFormat::EStyle::kNESInteger,
+					   TGNumberFormat::EAttribute::kNEANonNegative,
+					   TGNumberFormat::ELimit::kNELLimitMinMax, 0, 1023);
+	fRight[i]->AddFrame(fNEntryRight[i-3], fLHardware);
+    }
+
+    //Create okay and cancel buttons
+    fButtons = new TGHorizontalFrame(fMain);
+    
+    bOK = new TGTextButton(fButtons, "&Accept");
+    bOK->Connect("Clicked()", "ConfigPopout", this, "DoOk()");
+    bCancel = new TGTextButton(fButtons, "&Cancel");
+    bCancel->Connect("Clicked()", "ConfigPopout", this, "DoCancel()");
+    TGLayoutHints *fLButton = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 0, 5);
+    fButtons->AddFrame(bOK, fLButton);
+    fButtons->AddFrame(bCancel, fLButton);
+    
+    
+    fMain->AddFrame(f0, new TGLayoutHints(kLHintsNormal, 0,0,0,0));
+    fMain->AddFrame(fButtons, new TGLayoutHints(kLHintsTop | kLHintsRight, 5, 5, 0, 5));
+
     f1->AddFrame(fAdcOutput, fLHardware);
     f1->AddFrame(fChannels, fLHardware);
     
+    f0->AddFrame(f1, fLHardware);
+    f0->AddFrame(f21, fLHardware);    
     fMain->SetWindowName("Wavedump Config");
     fMain->MapSubwindows();
     fMain->Resize(fMain->GetDefaultWidth(), fMain->GetDefaultHeight());
@@ -920,6 +990,14 @@ WaveConfigPopout::~WaveConfigPopout()
 }
 
 void WaveConfigPopout::CloseWindow(){ delete this; }
+
+void WavedumpConfig::DoOk() { CloseWindow(); }
+
+void WavedumpConfig::DoCancel() { CloseWindow(); }
+
+void WavedumpConfig::LoadConfig() { }
+void WavedumpConfig::WriteConfig() { }
+
 
 void gui()
 {

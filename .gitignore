@@ -5,3 +5,4 @@
 *.pcm
 build/*.pcm
 data_in*
+WaveDumpConfig.txt

@@ -1,4 +1,4 @@
-[ lib/SignalProcessor.so lib/DataProcessor.so lib/WavedumpConfig.so lib/Digitizer.so]
+[ lib/DataProcessor.so lib/SignalProcessor.so lib/WavedumpConfig.so lib/Digitizer.so]
 # List of selected classes
 class ChannelConfig
 class DataProcessor
