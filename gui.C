@@ -9,6 +9,7 @@
 #include "RQ_OBJECT.h"
 #include "include/DataProcessor.h"
 #include "include/WavedumpConfig.h"
+#include "include/Digitizer.h"
 #include <iostream>
 
 const char *fLabel[] = {
@@ -895,6 +896,8 @@ void WaveConfigPopout::CloseWindow(){ delete this; }
 void gui()
 {
     gSystem->Load("libMathMore.so");
+    gSystem->Load("lib/libCAENDigitizer.so");
+    testDigitizer();
     new MainFrame(gClient->GetRoot(), 400, 220);
 }
 

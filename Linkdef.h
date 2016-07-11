@@ -6,7 +6,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-// ADAQAcquisition classes
+// Wavedump and processing class
 #pragma link C++ class DataProcessor+;
 #pragma link C++ class SignalProcessor+;
 #pragma link C++ class ChannelConfig+;

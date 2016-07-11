@@ -1,11 +1,10 @@
-
-#  To build the binary
-#  $ make 
+# Makefile for CAEN digitizer gui
+# Adam Anthony 7/10/16
+# To build the binary
+# $ make 
 #
-#  To clean the bin/ and build/ directories
-#  $ make clean
-#
-#********************************************************************
+# To clean the bin/ and build/ directories
+# $ make clean
 
 #**** MACRO DEFINITIONS ****#
 
@@ -14,9 +13,6 @@ RC:=root-config
 ROOTSYS:=$(shell $(RC) --prefix)
 ROOTMAKE:=$(ROOTSYS)/etc/Makefile.arch
 include $(ROOTMAKE)
-
-# Enable C++11 features
-#CXXFLAGS += -std=c++11
 
 # Specify the the binary, build, and source directories
 BUILDDIR = build
@@ -38,18 +34,13 @@ OBJS = $(subst src/,build/,$(TMP))
 TMP = $(patsubst %.C,%.so,$(SRCS))
 SOS =  $(subst src/,lib/,$(TMP))
 
-# Add the mandatory ROOT dictionary object file
-OBJS += $(BUILDDIR)/ROOTDict.o
-#SOS += $(LIBDIR)/Dictionary.so
-
 # Add various compiler flags
 CXXFLAGS += -w -I$(INCLDIR)
 
 SOFLAGS = -O -shared
 
 
-# Add linker flags for CAEN libraries (architecture dependent). Note
-# that these libraries are PROVIDED by the ADAQ code
+# Add linker flags for CAEN libraries (architecture dependent).
 LDFLAGS+=-Llib -lCAENVME -lCAENComm -lCAENDigitizer
 
 
@@ -61,7 +52,7 @@ LDFLAGS+=-Llib -lCAENVME -lCAENComm -lCAENDigitizer
 #***************#
 
 #*************************#
-# Rules to build the binary
+# Rules to build the libraries
 default : $(SOS)
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.C $(INCLS) 
@@ -86,11 +77,6 @@ $(BUILDDIR)/%_dictionary.cxx : $(INCLDIR)/%.h Linkdef.h
 	rootcling -f $@  $^
 	@cp $(BUILDDIR)/*.pcm ./
 	@rm $(BUILDDIR)/*.pcm
-
-#$(ROOTDICT) : $(INCLS) Linkdef.h
-#	echo "Generating ROOT dictionary"
-#	rootcling -f $@ $^
-#	$(CXX) $(CXXFLAGS) -c -o $(BUILDDIR)/dictionary.o $@
 
 # Clean the directory of all build files and binaries
 .PHONY: 
