@@ -1,5 +1,6 @@
 #general
 *~
 *.root
-*.pcm
+#dictionaries
+*rdict*
 data_in*
