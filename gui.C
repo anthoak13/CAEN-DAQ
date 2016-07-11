@@ -2,15 +2,18 @@
 //Adam Anthony 
 
 #include "TGClient.h"
+#include <TGNumberEntry.h>
 #include "TGWindow.h"
 #include "TRootEmbeddedCanvas.h"
 #include "TGFrame.h"
 #include "TGTab.h"
 #include "RQ_OBJECT.h"
+#include "TH1.h"
 #include "include/DataProcessor.h"
 #include "include/WavedumpConfig.h"
 #include "include/Digitizer.h"
 #include <iostream>
+#include <vector>
 
 const char *fLabel[] = {
     "Rise time",
@@ -254,9 +257,9 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     f2 = new TGHorizontalFrame(f1, 60, 20);
     f3 = new TGHorizontalFrame(f1, 60, 20);
     f5 = new TGHorizontalFrame(f1, 60, 20);
-    fEntryEvent = new TGNumberEntry(f2, 0, 10, -1,  TGNumberFormat::EStyle::kNESInteger,
-				    TGNumberFormat::EAttribute::kNEANonNegative,
-				    TGNumberFormat::ELimit::kNELLimitMinMax,
+    fEntryEvent = new TGNumberEntry(f2, 0, 10, -1,  TGNumberFormat::kNESInteger,
+				    TGNumberFormat::kNEANonNegative,
+				    TGNumberFormat::kNELLimitMinMax,
 				    0, dataP->getMaxEvents());
     fEntryHist = new TGNumberEntry(f3, 1, 10, -1,  TGNumberFormat::EStyle::kNESInteger,
 				   TGNumberFormat::EAttribute::kNEANonNegative,
@@ -366,7 +369,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
 
     fLabelBin = new TGLabel(f15, "# bins");
     fLabelXMin = new TGLabel(f16, "x min");
-    fLabelXMax = new TGLabel(f17, "x max");\
+    fLabelXMax = new TGLabel(f17, "x max");
     fEntryBin = new TGNumberEntry(f15, 0, 8, -1,  TGNumberFormat::EStyle::kNESInteger,
 				  TGNumberFormat::EAttribute::kNEANonNegative);
     fEntryXMin = new TGNumberEntry(f16, 0, 8, -1,  TGNumberFormat::EStyle::kNESInteger,
@@ -446,7 +449,7 @@ void MainFrame::DoDraw()
     //Process the event
     dataP->processEvent(fEntryCh->GetNumber(), fEntryEvent->GetNumber());
 
-    std::vector<TH1F*> hist;
+    std::vector< TH1F* > hist;
     //Loop through the options and create a canvas with all of the checked boxes
     for(int i = 0; i < 5; i++)
     {
@@ -1003,7 +1006,8 @@ void gui()
 {
     gSystem->Load("libMathMore.so");
     gSystem->Load("lib/libCAENDigitizer.so");
-    testDigitizer();
+
+    //    testDigitizer();
     new MainFrame(gClient->GetRoot(), 400, 220);
 }
 

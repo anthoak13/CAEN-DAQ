@@ -4,7 +4,7 @@
 #ifndef DATAPROCESSOR_H
 #define DATAPROCESSOR_H
 
-
+#ifndef __CINT__
 #include "TObject.h"
 #include "TString.h"
 #include "TTree.h"
@@ -13,6 +13,7 @@
 #include <fstream>
 #include <exception>
 #include <iostream>
+#endif
 #include "SignalProcessor.h"
 
 class DataProcessor : public TObject
