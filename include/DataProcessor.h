@@ -50,6 +50,7 @@ private:
 
 public:
     DataProcessor(TString, TString,  const UInt_t, const UInt_t);
+    DataProcessor();
     ~DataProcessor();
 
     int processEvent(UInt_t, UInt_t);
@@ -72,7 +73,7 @@ public:
     const std::vector<int> getCFD();
     const std::vector<int> getTrap();
     
-    ClassDef(DataProcessor, 0);
+    ClassDef(DataProcessor, 0)
 };
 
 #endif

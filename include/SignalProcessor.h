@@ -74,7 +74,7 @@ public:
 
     int peakFind(std::vector<int>::iterator, std::vector<int>::iterator);
 
-    ClassDef(SignalProcessor,0);
+    ClassDef(SignalProcessor,0)
 };
 
 #endif

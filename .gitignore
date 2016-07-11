@@ -1,3 +1,5 @@
 #general
 *~
 *.root
+*.pcm
+data_in*

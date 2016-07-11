@@ -61,10 +61,10 @@ public:
     void setTrigThreshold(UInt_t in) { triggerThreshold = in;};
     void setChanTrig(ChannelTrigger in) { triggerSetting = in;};
 
-    void write(ofstream&);
-    void read(ifstream&);
+    void write(std::ofstream&);
+    void read(std::ifstream&);
 
-    ClassDef(ChannelConfig, 0);
+    ClassDef(ChannelConfig, 0)
 };
 
 class WavedumpConfig : public TObject
@@ -113,7 +113,7 @@ public:
     void setGlobalChan(const ChannelConfig &chIn);
     void addChannel(UInt_t chNum, const ChannelConfig &chIn);
 
-    ClassDef(WavedumpConfig, 0);
+    ClassDef(WavedumpConfig, 0)
 
 };
 

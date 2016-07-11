@@ -1,7 +1,9 @@
 //Implementation of wavedump config class
 
 #include "WavedumpConfig.h"
-
+using namespace std;
+ClassImp(WavedumpConfig);
+ClassImp(ChannelConfig);
 WavedumpConfig::WavedumpConfig(TString name)
 {
     setOutput(true, false, false, 1023);

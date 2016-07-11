@@ -5,7 +5,8 @@
 
 //include files
 #include "SignalProcessor.h"
-
+#include <iostream>
+ClassImp(SignalProcessor);
 //Constructor
 SignalProcessor::SignalProcessor()
 {
@@ -212,10 +213,13 @@ void SignalProcessor::setInter(std::vector<int>* in)
     //create x array
     std::vector<double> x;
     std::vector<double> y;
-    for(unsigned int i = 0; i < in->size(); i++) { x.push_back(i); y.push_back(in->at(i)); }
+    for(unsigned int i = 0; i < 100; i++) { x.push_back(i); y.push_back(i*2); } 
 
-    delete _inter;
+    if(_inter != NULL)
+	    delete _inter;
+    std::cout << "Creating interp" << std::endl;
     _inter = new ROOT::Math::Interpolator(x, y, ROOT::Math::Interpolation::kAKIMA);
+    std::cout << "Created" << std::endl;
 }
 /*
 void SignalProcessor::setD_kl(std::vector<int>* signal, const int start, const int length)

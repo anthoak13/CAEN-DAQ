@@ -7,8 +7,8 @@
 #include "TGFrame.h"
 #include "TGTab.h"
 #include "RQ_OBJECT.h"
-#include "DataProcessor.h"
-#include "WavedumpConfig.h"
+#include "include/DataProcessor.h"
+#include "include/WavedumpConfig.h"
 #include <iostream>
 
 const char *fLabel[] = {

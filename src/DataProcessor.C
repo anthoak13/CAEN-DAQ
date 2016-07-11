@@ -1,7 +1,8 @@
 //Data Processor implimentation
 //Adam Anthony 6/30/16
 
-#include "DataProcessor.h"
+#include <DataProcessor.h>
+ClassImp(DataProcessor);
 
 DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t numFiles, const UInt_t headerLength)
 {

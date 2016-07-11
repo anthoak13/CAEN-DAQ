@@ -1,0 +1,12 @@
+[ lib/DataProcessor.so lib/SignalProcessor.so lib/WavedumpConfig.so ]
+# List of selected classes
+class ChannelConfig
+class DataProcessor
+class SignalProcessor
+class WavedumpConfig
+header include/WavedumpConfig.h
+header include/DataProcessor.h
+header include/SignalProcessor.h
+# List of selected enums and outer classes
+enum ChannelTrigger
+enum DACtype
