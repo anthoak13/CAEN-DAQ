@@ -8,3 +8,5 @@ WaveDumpConfig.txt
 *#*
 *#
 Header*
+*.sh
+!run.sh

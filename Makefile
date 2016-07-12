@@ -34,9 +34,9 @@ INCLS = $(INCLDIR)/*.h
 
 
 # Specify all object files (to be built in the build/ directory)
-SRCS = $(wildcard $(SRCDIR)/*.C)
-SRCS += $(wildcard $(SRCDIR)/gui/*.C)
-TMP = $(patsubst %.C,%.o,$(SRCS))
+SRCS = $(wildcard $(SRCDIR)/*.cpp)
+SRCS += $(wildcard $(SRCDIR)/gui/*.cpp)
+TMP = $(patsubst %.cpp,%.o,$(SRCS))
 OBJS = $(subst $(SRCDIR),$(BUILDDIR),$(TMP))
 #GUISRC = $(wildcard *.C)
 GUISRC = gui.C
@@ -45,7 +45,7 @@ GUIO = $(addprefix $(BUILDDIR)/, $(TMP4))
 
 
 #Get info for dictionary generation
-TMP1 = $(patsubst %.C,%.h,$(SRCS))
+TMP1 = $(patsubst %.cpp,%.h,$(SRCS))
 ROOTDICH = $(subst src/,$(INCLDIR)/,$(TMP1))
 DICTDIR = $(BUILDDIR)/dict
 ROOTDICT = dictionary
@@ -83,7 +83,7 @@ endif
 default : $(SO)
 	@echo "$(SRCS)"
 
-$(BUILDDIR)/%.o : $(SRCDIR)/%.C $(INCLS)
+$(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLS)
 	@echo  "Building object file '$@' ..."
 	@$(CXX) -g $(CXXFLAGS) -c -o $@ $<
 
