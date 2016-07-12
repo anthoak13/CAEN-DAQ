@@ -1,7 +1,7 @@
 #ifndef __GUIH_
 #define __GUIH_
 
-#ifndef __CINT__
+//#ifndef __CINT__
 #include "TGClient.h"
 #include "TCanvas.h"
 #include "TGNumberEntry.h"
@@ -23,7 +23,7 @@
 #include <iostream>
 #include <vector>
 #include <exception>
-#endif
+//#endif
 
 
 #endif

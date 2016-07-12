@@ -34,7 +34,7 @@ private:
     TGHorizontalFrame *fButtons;
     WavedumpConfig config;
     TString path;
-
+#ifndef __CINT__
     const char *fLabelRight[7] = {
     "GNU Plot path",
     "External trigger",
@@ -43,7 +43,8 @@ private:
     "Max events in buffer",
     "Event post trigger",
     "Inturrupt"};
-
+#endif
+    
 public:
     WaveConfigPopout(const TGWindow *p, const TGWindow *main, MainFrame *mainFrame);
     virtual ~WaveConfigPopout();

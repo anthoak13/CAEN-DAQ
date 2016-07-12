@@ -14,7 +14,7 @@ private:
     TGHorizontalFrame *fNumTrap[3], *fNumZero[3];
     TGNumberEntry *fEntryTrap[3], *fEntryZero[3];
     SignalProcessor *signalP;
-
+#ifndef __CINT__
     const char *fLabel[6] = {
     "Rise time",
     "Top",
@@ -22,6 +22,7 @@ private:
     "Offset",
     "Scaling",
     "Threshold"};
+#endif
     
     
 public:

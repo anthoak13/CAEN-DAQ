@@ -1,9 +1,9 @@
 #ifndef __MAINFRAME_H
 #define __MAINFRAME_H
 
-#ifndef __CINT__
+
 #include "gui.h"
-#endif
+
 class DataProcessor;
 //Definition of MainFrame
 class MainFrame {
@@ -41,13 +41,14 @@ private:
     UInt_t numCh, headerLength;
 
     
-    
+#ifndef __CINT__
     const char *drawLabel[5] = {
     "signal",
     "trap",
     "deriv",
     "cfd",
     "raw" };
+#endif
 
     enum EMenIds {
     M_ACQ_START,
