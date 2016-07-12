@@ -38,7 +38,8 @@ SRCS = $(wildcard $(SRCDIR)/*.C)
 SRCS += $(wildcard $(SRCDIR)/gui/*.C)
 TMP = $(patsubst %.C,%.o,$(SRCS))
 OBJS = $(subst $(SRCDIR),$(BUILDDIR),$(TMP))
-GUISRC = $(wildcard *.C)
+#GUISRC = $(wildcard *.C)
+GUISRC = gui.C
 TMP4 = $(patsubst %.C,%.o,$(GUISRC))
 GUIO = $(addprefix $(BUILDDIR)/, $(TMP4))
 
@@ -96,7 +97,7 @@ $(SO) : $(OBJS) $(ROOTDICO)
 
 build : $(GUIO) $(SO)
 	@echo "Compiling macro $(GUISCR)"
-	$(CXX) -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
+	$(CXX) -Dstand -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
 
 #***********************************************#
 # Rules to generate the necessary ROOT dictionary
