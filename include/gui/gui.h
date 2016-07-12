@@ -17,9 +17,9 @@
 #include "TSystem.h"
 #include "RQ_OBJECT.h"
 #include "TH1.h"
-#include "/home/adam/Documents/reu/CAEN-DAQ/include/DataProcessor.h"
-#include "/home/adam/Documents/reu/CAEN-DAQ/include/WavedumpConfig.h"
-#include "/home/adam/Documents/reu/CAEN-DAQ/include/Digitizer.h"
+#include "DataProcessor.h"
+#include "WavedumpConfig.h"
+#include "Digitizer.h"
 #include <iostream>
 #include <vector>
 #include <exception>

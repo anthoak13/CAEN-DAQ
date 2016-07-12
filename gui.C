@@ -1,13 +1,10 @@
 //File for gui, macro should be interpreted
 //Adam Anthony 
 
-#include "include/gui/gui.h"
+#include "MainFrame.h"
 
 void gui()
 {
-    #ifndef STANDALONE
-    gSystem->Load("lib/libCAENDigitizer.so");
-    #endif
     testDigitizer();
     new MainFrame(gClient->GetRoot(), 400, 220);
 }
