@@ -97,7 +97,7 @@ $(SO) : $(OBJS) $(ROOTDICO)
 
 build : $(GUIO) $(SO)
 	@echo "Compiling macro $(GUISCR)"
-	$(CXX) -Dstand -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
+	@$(CXX) -Dstand -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
 
 #***********************************************#
 # Rules to generate the necessary ROOT dictionary
