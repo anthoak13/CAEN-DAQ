@@ -994,12 +994,12 @@ WaveConfigPopout::~WaveConfigPopout()
 
 void WaveConfigPopout::CloseWindow(){ delete this; }
 
-void WavedumpConfig::DoOk() { CloseWindow(); }
+void WaveConfigPopout::DoOk() { CloseWindow(); }
 
-void WavedumpConfig::DoCancel() { CloseWindow(); }
+void WaveConfigPopout::DoCancel() { CloseWindow(); }
 
-void WavedumpConfig::LoadConfig() { }
-void WavedumpConfig::WriteConfig() { }
+void WaveConfigPopout::LoadConfig() { }
+void WaveConfigPopout::WriteConfig() { }
 
 
 void gui()

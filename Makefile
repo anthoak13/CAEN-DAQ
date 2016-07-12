@@ -11,8 +11,9 @@
 # Include the Makefile for ROOT-based projects
 RC:=root-config
 ROOTSYS:=$(shell $(RC) --prefix)
-#ROOTMAKE:=$(ROOTSYS)/etc/Makefile.arch
-#include $(ROOTMAKE)
+V:=$(shell $(RC) --version)
+TEMP2 = $(subst ., ,$(V))
+VERSION=$(word 1, $(TEMP2))
 
 # Specify the the binary, build, and source directories
 BUILDDIR = build
@@ -32,11 +33,13 @@ SRCS = $(wildcard $(SRCDIR)/*.C)
 TMP = $(patsubst %.C,%.o,$(SRCS))
 OBJS = $(subst src/,build/,$(TMP))
 
+#Get info for dictionaries
 TMP1 = $(patsubst %.C,%.h,$(SRCS))
 ROOTDICH = $(subst src/,$(INCLDIR)/,$(TMP1))
+DICTDIR = $(BUILDDIR)/dict
 ROOTDICT = dictionary
-ROOTDICO = build/dict/$(ROOTDICT).o
-ROOTDICSRC = build/dict/$(ROOTDICT).cxx
+ROOTDICO = $(DICTDIR)/$(ROOTDICT).o
+ROOTDICSRC = $(DICTDIR)/$(ROOTDICT).cxx
 
 
 # Add various compiler flags
@@ -44,13 +47,17 @@ CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -w -I$(INCLDIR)
 
 SOFLAGS = -O -shared
 
-SO = $(LIBDIR)/libTest.so
+SO = $(LIBDIR)/libCAENGui.so
 
 # Add linker flags for CAEN libraries (architecture dependent).
 LDFLAGS = $(shell $(RC) --ldflags) -Llib -lCAENVME -lCAENComm -lCAENDigitizer
 
-#TUNL reqs
-CXX = /home/reu/aka30/gcc-4.9.3/bin/g++
+#Get proper compiler for TUNL
+ifeq ($(VERSION), 5)
+	CXX = /home/reu/aka30/gcc-4.9.3/bin/g++
+else
+	CXX = $(shell $(RC) --cxx)
+endif
 
 
 
@@ -81,8 +88,14 @@ $(ROOTDICO) : $(ROOTDICSRC)
 # Generate the necessary ROOT dictionaries
 $(ROOTDICSRC) : $(ROOTDICH) Linkdef.h
 	@echo  "\nGenerating ROOT dictionary '$@' ..."
+ifeq ($(VERSION), 5)
 	rootcint -f $@ -c  $^
 	rlibmap -f -o gui.rootmap -l $(SO) -c Linkdef.h
+else
+	rootcling -f $@ -rml $(SO) -rmf gui.rootmap $^
+	@cp -f $(DICTDIR)/*.pcm ./
+	@rm -f $(DICTDIR)/*.pcm
+endif
 
 # Clean the directory of all build files and binaries
 .PHONY: 
