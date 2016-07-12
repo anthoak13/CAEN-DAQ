@@ -8,3 +8,4 @@ data_in*
 WaveDumpConfig.txt
 *.rootmap
 lib/libCAENGui.so
+*#*

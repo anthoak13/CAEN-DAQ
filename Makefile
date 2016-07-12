@@ -43,11 +43,7 @@ ROOTDICSRC = $(DICTDIR)/$(ROOTDICT).cxx
 
 
 # Add various compiler flags
-<<<<<<< HEAD
-CXXFLAGS = -fPIC -pthread -std=c++0x -Wno-deprecated-declarations -m64 -I/root-6.06.02/include -w -I$(INCLDIR)
-=======
 CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -w -I$(INCLDIR)
->>>>>>> ROOTv5
 
 SOFLAGS = -O -shared -std=c++0x
 
