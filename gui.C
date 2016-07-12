@@ -2,11 +2,18 @@
 //Adam Anthony 
 
 #include "TGClient.h"
-#include <TGNumberEntry.h>
+#include "TCanvas.h"
+#include "TGNumberEntry.h"
 #include "TGWindow.h"
 #include "TRootEmbeddedCanvas.h"
+#include "TGLabel.h"
+#include "TGComboBox.h"
+#include "TGMenu.h"
 #include "TGFrame.h"
 #include "TGTab.h"
+#include "TApplication.h"
+#include "TROOT.h"
+#include "TSystem.h"
 #include "RQ_OBJECT.h"
 #include "TH1.h"
 #include "include/DataProcessor.h"
@@ -14,6 +21,7 @@
 #include "include/Digitizer.h"
 #include <iostream>
 #include <vector>
+#include <exception>
 
 const char *fLabel[] = {
     "Rise time",
@@ -510,7 +518,7 @@ void MainFrame::DoDrawMult()
 
     if(tree == NULL)
     {
-	cout << "Tree not found" << endl;
+	std::cout << "Tree not found" << std::endl;
 	return;
     }
     UInt_t numEntries =  tree->GetEntries();
@@ -554,7 +562,7 @@ void MainFrame::DoGenerate()
 
 void MainFrame::DoAcquisitionClosed()
 {
-    cout << "updating DAQ info" << endl;
+    std::cout << "updating DAQ info" << std::endl;
     
     UpdateDataProcessor(inputTemplate, meta, numCh, headerLength);
 
@@ -566,7 +574,7 @@ void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t num
     delete dataP;
     try {
 	dataP = new DataProcessor(templateIn, meta, numCh, headerLength);
-    } catch(exception &e) {
+    } catch(std::exception &e) {
 	std::cout << e.what() << std::endl;
 	dataP = new DataProcessor("", "", 0, 0);
     }
@@ -595,10 +603,10 @@ void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t num
 
 void MainFrame::HandleMenu(Int_t id)
 {
-    std::cout << id << endl;
+    std::cout << id << std::endl;
     switch(id) {
     case M_FILE_OPEN:
-	cout << " Opening DAQ window" << endl;
+	std::cout << " Opening DAQ window" << std::endl;
 	new DAQPopout(gClient->GetRoot(), fMain, this, &inputTemplate, &meta, &numCh, &headerLength);
 	break;
     case M_FILE_LINK:
@@ -964,12 +972,12 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     //Create okay and cancel buttons
     fButtons = new TGHorizontalFrame(fMain);
     
-    bOK = new TGTextButton(fButtons, "&Accept");
-    bOK->Connect("Clicked()", "ConfigPopout", this, "DoOk()");
+    bOk = new TGTextButton(fButtons, "&Accept");
+    bOk->Connect("Clicked()", "ConfigPopout", this, "DoOk()");
     bCancel = new TGTextButton(fButtons, "&Cancel");
     bCancel->Connect("Clicked()", "ConfigPopout", this, "DoCancel()");
     TGLayoutHints *fLButton = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 0, 5);
-    fButtons->AddFrame(bOK, fLButton);
+    fButtons->AddFrame(bOk, fLButton);
     fButtons->AddFrame(bCancel, fLButton);
     
     
@@ -1012,7 +1020,7 @@ void gui()
 }
 
 //Main Program *****************
-#ifdef STANDALONE
+#ifdef stand
 int main(int argc, char **argv)
 {
    TApplication theApp("App", &argc, argv);

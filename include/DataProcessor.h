@@ -51,7 +51,6 @@ private:
 
 public:
     DataProcessor(TString, TString,  const UInt_t, const UInt_t);
-    DataProcessor();
     ~DataProcessor();
 
     int processEvent(UInt_t, UInt_t);

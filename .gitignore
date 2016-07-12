@@ -1,6 +1,7 @@
 *~
 *.root
 *.pcm
+*.out
 data_in*
 WaveDumpConfig.txt
 *.rootmap
