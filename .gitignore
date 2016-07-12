@@ -1,9 +1,8 @@
-#general
 *~
 *.root
-#dictionaries
 *.pcm
 data_in*
 WaveDumpConfig.txt
 *.rootmap
 *#*
+*#
