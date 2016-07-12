@@ -32,8 +32,10 @@ INCLDIR = $(PWD)/include
 # Specify all header files
 INCLS = $(INCLDIR)/*.h
 
+
 # Specify all object files (to be built in the build/ directory)
 SRCS = $(wildcard $(SRCDIR)/*.C)
+SRCS += $(wildcard $(SRCDIR)/gui/*.C)
 TMP = $(patsubst %.C,%.o,$(SRCS))
 OBJS = $(subst $(SRCDIR),$(BUILDDIR),$(TMP))
 GUISRC = $(wildcard *.C)
@@ -49,8 +51,10 @@ ROOTDICT = dictionary
 ROOTDICO = $(DICTDIR)/$(ROOTDICT).o
 ROOTDICSRC = $(DICTDIR)/$(ROOTDICT).cxx
 
+
+
 # Add various compiler flags
-CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -w -I$(INCLDIR)
+CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -w -I$(INCLDIR) -I$(INCLDIR)/gui
 SOFLAGS = -O -shared -std=c++0x
 
 #Name of generated library
@@ -76,7 +80,7 @@ endif
 #*************************#
 # Rules to build the libraries
 default : $(SO)
-	@echo "Done"
+	@echo "$(SRCS)"
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.C $(INCLS)
 	@echo  "Building object file '$@' ..."
@@ -119,7 +123,7 @@ endif
 clean:
 	@echo  "Cleaning up the build and binary ..."
 	@rm -f $(BUILDDIR)/*.o *.d $(BUILDDIR)/*Dict.* $(SO) $(TARGET)
-	@rm -f $(BUILDDIR)/dict/*
+	@rm -f $(BUILDDIR)/dict/*.o $(BUILDDIR)/gui/*.o
 	@rm -f *Dict*
 	@echo "Done"
 

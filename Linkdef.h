@@ -12,5 +12,9 @@
 #pragma link C++ class ChannelConfig+;
 #pragma link C++ class WavedumpConfig+;
 #pragma link C++ enum ChannelTrigger;
+#pragma link C++ class MainFrame;
+#pragma link C++ class ConfigPopout;
+#pragma link C++ class WaveConfigPopout;
+#pragma link C++ class DAQPopout;
 
 #endif

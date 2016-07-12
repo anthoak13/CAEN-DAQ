@@ -4,7 +4,7 @@ if [ -e file_list.txt ]; then
 fi
 ### set number of channels
 numchannel=16
-pathtodata='/home/reu/aka30/reu/data'
+pathtodata='/home/adam/Documents/reu/data'
 ### set the soft links to the raw data files
 ls -rth $pathtodata/*.dat | tail -$numchannel > file_list.txt
 awk -F \- '{system("ln -sf " $0 " data_in"$7)}' file_list.txt
