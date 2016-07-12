@@ -7,11 +7,14 @@
 #define SIGNALPROCESSOR_H
 
 //inlude files
+
 #include "TObject.h"
 #include "TMath.h"
 #include "Math/Interpolator.h"
+#ifndef __CINT__
 #include <vector>
 #include <iterator>
+#endif
 
 class SignalProcessor : public TObject
 {

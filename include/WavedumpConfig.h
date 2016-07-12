@@ -3,16 +3,18 @@
 #ifndef _WAVEDUMPCONFIGH
 #define _WAVEDUMPCONFIGH
 
+#ifndef __CINT__
 #include "TObject.h"
 #include "TString.h"
 #include "TRegexp.h"
 #include <vector>
-#include <map>
 #include <fstream>
 #include <ctime>
 #include <iostream>
 #include <stdexcept>
-
+#include <iomanip>
+#endif
+#include <map>
 
 enum ChannelTrigger
 {

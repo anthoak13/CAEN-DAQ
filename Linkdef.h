@@ -12,7 +12,5 @@
 #pragma link C++ class ChannelConfig+;
 #pragma link C++ class WavedumpConfig+;
 #pragma link C++ enum ChannelTrigger;
-#pragma link C++ enum DACtype;
-
 
 #endif

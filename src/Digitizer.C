@@ -1,6 +1,8 @@
+#ifndef __CINT__
 #include "Digitizer.h"
 #include "CAENDigitizer.h"
 #include <iostream>
+#endif
 void testDigitizer()
 {
     CAEN_DGTZ_ErrorCode ret;
