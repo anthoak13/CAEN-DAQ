@@ -1,4 +1,11 @@
-Library.ChannelConfig:                      lib/libTest.so
-Library.DataProcessor:                      lib/libTest.so
-Library.SignalProcessor:                    lib/libTest.so
-Library.WavedumpConfig:                     lib/libTest.so
+[ lib/libCAENGui.so ]
+# List of selected classes
+class ChannelConfig
+class DataProcessor
+class SignalProcessor
+class WavedumpConfig
+header include/WavedumpConfig.h
+header include/DataProcessor.h
+header include/SignalProcessor.h
+# List of selected enums and outer classes
+enum ChannelTrigger

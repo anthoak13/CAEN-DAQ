@@ -41,7 +41,6 @@ ROOTDICT = dictionary
 ROOTDICO = $(DICTDIR)/$(ROOTDICT).o
 ROOTDICSRC = $(DICTDIR)/$(ROOTDICT).cxx
 
-
 # Add various compiler flags
 CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -w -I$(INCLDIR)
 

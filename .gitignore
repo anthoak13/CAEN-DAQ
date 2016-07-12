@@ -3,7 +3,6 @@
 *.root
 #dictionaries
 *.pcm
-build/*
 data_in*
 WaveDumpConfig.txt
 *.rootmap
