@@ -33,3 +33,13 @@ git fetch origin master
 git reset --hard FETCH_HEAD
 ```
 The source will have to be rebuilt
+
+##License and disclaimer
+
+CAEN-DAQ licensed under the GNU General Public License v3.0. You have the right to modify and/or redistribute this source code under the terms specified in the license,
+
+CAEN-DAQ is provided without any warranty nor guarantee of fitness for any particular purpose. The author(s) shall have no liability for direct, indirect, or other undesirable consequences of any character that may result from the use of this source code. This may include - but is not limited - to irrevocable changes to the user's firmware, software, hardware, or data. By your use of CAEN-DAQ, you implicitly agree to absolve the author(s) of any liability whatsoever.
+
+The CAEN libraries - which are distributed (a) for the user's convenience and (b) to ensure version compatibility - are also licensed under the GNU General Public License v3.0 by CAEN S.p.A.
+
+A copy of the GNU General Public License v3.0 may be found within this repository at License.md or is available online at http://www.gnu.org/licenses.
