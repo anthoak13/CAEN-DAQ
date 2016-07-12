@@ -1,8 +1,10 @@
 #ifndef __MAINFRAME_H
 #define __MAINFRAME_H
 
+#ifndef __CINT__
 #include "gui.h"
-
+#endif
+class DataProcessor;
 //Definition of MainFrame
 class MainFrame {
 
@@ -38,13 +40,7 @@ private:
     TString inputTemplate, meta;
     UInt_t numCh, headerLength;
 
-    const char *fLabel[6] = {
-    "Rise time",
-    "Top",
-    "M",
-    "Offset",
-    "Scaling",
-    "Threshold"};
+    
     
     const char *drawLabel[5] = {
     "signal",
