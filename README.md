@@ -2,8 +2,8 @@
 A ROOT based GUI for CAEN digitizers and linuxx8664gcc architectures
 
 ##Prerequisites
-  - ROOT either v5 or v6
-  - g++, at least 4.7.x
+  - [ROOT](https://root.cern.ch/) either v5 or v6
+  - gcc 4.7.x or above (installation directions [here](http://luiarthur.github.io/gccinstall))
   - Wavedump (to use data aquision capabilities)
   
 ##Building
