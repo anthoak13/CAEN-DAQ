@@ -229,9 +229,9 @@ void SignalProcessor::setInter(std::vector<int>* in)
 
     if(_inter != NULL)
 	    delete _inter;
-    std::cout << "Creating interp" << std::endl;
+    //std::cout << "Creating interp" << std::endl;
     _inter = new ROOT::Math::Interpolator(x, y, ROOT::Math::Interpolation::kAKIMA);
-    std::cout << "Created" << std::endl;
+    //std::cout << "Created" << std::endl;
 }
 /*
 void SignalProcessor::setD_kl(std::vector<int>* signal, const int start, const int length)
