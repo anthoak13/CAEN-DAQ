@@ -15,6 +15,13 @@
 #include "ConfigPopout.h"
 #include "DAQPopout.h"
 #include "WaveConfigPopout.h"
+#include "WavedumpConfig.h"
+#include "../SignalProcessor.h"
+#include "../DataProcessor.h"
+#include "../Digitizer.h"
+
+#include "TH1.h"
+
 MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
 {
     
@@ -222,8 +229,16 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     tf->AddFrame(fCTab2, new TGLayoutHints(kLHintsNormal | kLHintsExpandX | kLHintsExpandY, 5, 5, 5, 5));
     
     //Add Tabs to main frame
-    fMain->AddFrame(fTab, new TGLayoutHints(kLHintsBottom | kLHintsExpandX |
-					    kLHintsExpandY, 2, 2, 5, 1));
+    fMain->AddFrame(fTab, new TGLayoutHints(kLHintsTop | kLHintsExpandX |
+					    kLHintsExpandY, 2, 2, 5, 0));
+
+    //Add status bar and setup the timer
+    fStatusBar = new TGStatusBar(fMain);
+    fStatusBar->Draw3DCorner(false);
+    Int_t parts[] = {75, 25};
+    fStatusBar->SetParts(parts, 2);
+    fMain->AddFrame(fStatusBar, new TGLayoutHints(kLHintsTop | kLHintsRight | kLHintsExpandX, 0, 0, 0, 0));
+    UpdateBoardInfo();
 
     fMain->SetWindowName("Data Processor");
     fMain->MapSubwindows();
@@ -231,6 +246,11 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fMain->MapWindow();
 
     welcome();
+
+    //set timer to update board info every 2 seconds
+    timer = new TTimer();
+    timer->Connect("Timeout()", "MainFrame", this, "UpdateBoardInfo()");
+    timer->Start(2000, false);
 }
 
 MainFrame::~MainFrame()
@@ -433,4 +453,18 @@ void MainFrame::HandleMenu(Int_t id)
 	break;
     }
 	
+}
+
+void MainFrame::UpdateBoardInfo()
+{
+    CAEN_DGTZ_BoardInfo_t info;
+    CAEN_DGTZ_ErrorCode error = getDigitizerInfo(&info, WavedumpConfig());
+    TString boardText;
+    if(error < 0)
+	boardText =  ("Error: " + getCAENError(error) );
+    else
+	boardText = TString("Model name: ").Append(info.ModelName).Append(
+	    " Serial number: ").Append(info.SerialNumber);
+
+    fStatusBar->SetText(boardText, 1);
 }

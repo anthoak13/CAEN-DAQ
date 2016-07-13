@@ -14,6 +14,7 @@
 #define __CONFIGPOPOUT_H
 
 #include "gui.h"
+class SignalProcessor;
 //Definition of Config popout
 class ConfigPopout {
     RQ_OBJECT("ConfigPopout");

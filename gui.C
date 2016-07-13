@@ -17,7 +17,6 @@
 
 void gui()
 {
-    testDigitizer();
     new MainFrame(gClient->GetRoot(), 400, 220);
 }
 

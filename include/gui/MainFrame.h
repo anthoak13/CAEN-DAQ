@@ -15,6 +15,7 @@
 
 
 #include "gui.h"
+#include "TTimer.h"
 
 class DataProcessor;
 //Definition of MainFrame
@@ -52,6 +53,9 @@ private:
     TString inputTemplate, meta;
     UInt_t numCh, headerLength;
 
+    TTimer *timer;
+    TGStatusBar *fStatusBar;
+
     
 #ifndef __CINT__
     const char *drawLabel[5] = {
@@ -84,6 +88,7 @@ public:
     void UpdateDataProcessor(TString, TString, UInt_t, UInt_t);
     void DoAcquisitionClosed();
     void HandleMenu(Int_t id);
+    void UpdateBoardInfo();
 };
 
 #endif

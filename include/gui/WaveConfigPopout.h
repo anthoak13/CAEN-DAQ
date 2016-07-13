@@ -15,8 +15,10 @@
 
 #include "gui.h"
 #include <string>
+#include "../WavedumpConfig.h"
 
 class MainFrame;
+
 class WaveConfigPopout {
     RQ_OBJECT("WaveConfigPopout");
 

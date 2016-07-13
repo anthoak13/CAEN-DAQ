@@ -11,6 +11,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "ConfigPopout.h"
+#include "../SignalProcessor.h"
+#include <iostream>
+
 
 //ConfigPopout implementaion********************
 ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, SignalProcessor *sigP)

@@ -11,6 +11,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "DAQPopout.h"
+#include <iostream>
+
 
 DAQPopout::DAQPopout(const TGWindow *p, const TGWindow *main,  MainFrame *frame,
 		     TString *tempIn, TString *metaIn, UInt_t *numChIn, UInt_t *headerLengthIn)

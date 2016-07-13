@@ -11,7 +11,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 //Test for digitizer
-#ifndef __CINT__
 #include "CAENDigitizer.h"
-#endif
-void testDigitizer();
+#include "CAENDigitizerType.h"
+#include "WavedumpConfig.h"
+
+
+CAEN_DGTZ_ErrorCode getDigitizerInfo(CAEN_DGTZ_BoardInfo_t *info, WavedumpConfig config);
+
+TString getCAENError(CAEN_DGTZ_ErrorCode error);
+
