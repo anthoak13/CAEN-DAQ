@@ -1,3 +1,15 @@
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//                            Copyright (C) 2016                             //
+//                    Adam Anthoony : All rights reserved                    //
+//                                                                           //
+//     This source code is licensed under the GNU GPL v3.0.You have the      //
+//     right to modify and/or redistribute this source code under the terms  //
+//     specified in the license, which may be found online at                //
+//     http://www.gnu.org/licenses.                                          //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 #include "WaveConfigPopout.h"
 
 WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, MainFrame *mainFrame)
@@ -17,8 +29,8 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
 
     //Create USB/PCI things
     fCBHardware = new TGComboBox(fHardware);
-    fCBHardware->AddEntry("USB", 0);
-    fCBHardware->AddEntry("PCI", 1);
+    fCBHardware->AddEntry("USB", 1);
+    fCBHardware->AddEntry("PCI", 0);
     fCBHardware->Select(0, false);
     fCBHardware->Resize(45, 20);
     fNum1 =  new TGNumberEntry(fHardware, 0, 2, -1,  TGNumberFormat::EStyle::kNESInteger,
@@ -44,8 +56,8 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     file2 = new TGLayoutHints(kLHintsNormal, 2, 2, 0, 0);
     
     fCBFileType  = new TGComboBox(fFile);
-    fCBFileType->AddEntry("Binary", 0);
-    fCBFileType->AddEntry("ASCII", 1);
+    fCBFileType->AddEntry("Binary", 1);
+    fCBFileType->AddEntry("ASCII", 0);
     fCBFileType->Select(0, false);
     fCBFileType->Resize(55, 20);
     //buttons for header, etc
@@ -70,6 +82,7 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     fChannels = new TGGroupFrame(f1, "Channels", kVerticalFrame);
     f11 = new TGHorizontalFrame(fChannels);
     fBAddCh = new TGTextButton(f11, "Add Ch:");
+
     fNEntryCh = new TGNumberEntryField(f11, -1, 0, TGNumberFormat::EStyle::kNESInteger,
 			       TGNumberFormat::EAttribute::kNEANonNegative);
     fNEntryCh->Resize(20, fNEntryCh->GetDefaultHeight());
@@ -136,7 +149,7 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     fRight[1]->AddFrame(fCBExternalTrig, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
 
     fCBLogic = new TGComboBox(fRight[2]);
-    fCBLogic->AddEntry("NIM", 0);
+    fCBLogic->AddEntry("NIM", 1);
     fCBLogic->AddEntry("TTL", 0);
     fCBLogic->Resize(50, 20);
     fRight[2]->AddFrame(fCBLogic, new TGLayoutHints(kLHintsNormal, 45, 0, 0, 0));
@@ -153,9 +166,9 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     fButtons = new TGHorizontalFrame(fMain);
     
     bOk = new TGTextButton(fButtons, "&Accept");
-    bOk->Connect("Clicked()", "ConfigPopout", this, "DoOk()");
+    bOk->Connect("Clicked()", "WaveConfigPopout", this, "DoOk()");
     bCancel = new TGTextButton(fButtons, "&Cancel");
-    bCancel->Connect("Clicked()", "ConfigPopout", this, "DoCancel()");
+    bCancel->Connect("Clicked()", "WaveConfigPopout", this, "DoCancel()");
     TGLayoutHints *fLButton = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 0, 5);
     fButtons->AddFrame(bOk, fLButton);
     fButtons->AddFrame(bCancel, fLButton);
@@ -173,6 +186,10 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     fMain->MapSubwindows();
     fMain->Resize(fMain->GetDefaultWidth(), fMain->GetDefaultHeight());
     fMain->MapWindow();
+    
+    fBAddCh->Connect("Clicked()", "WaveConfigPopout", this, "AddChannel()");
+    fCBChan->Connect("Selected(Int_t)", "WaveConfigPopout", this, "SelectChannel(Int_t)");
+    LoadConfig();
 }
 
 WaveConfigPopout::~WaveConfigPopout()
@@ -182,9 +199,107 @@ WaveConfigPopout::~WaveConfigPopout()
 
 void WaveConfigPopout::CloseWindow(){ delete this; }
 
-void WaveConfigPopout::DoOk() { CloseWindow(); }
+void WaveConfigPopout::DoOk() { WriteConfig(); CloseWindow(); }
 
 void WaveConfigPopout::DoCancel() { CloseWindow(); }
 
-void WaveConfigPopout::LoadConfig() { }
-void WaveConfigPopout::WriteConfig() { }
+void WaveConfigPopout::LoadConfig()
+{
+    config.read();
+
+    //setup misc
+    fTEntryGnuPlot->SetText(config.getGnuPlotPath());
+    fCBExternalTrig->Select(config.getExtTrig());
+    fCBLogic->Select(config.getNIM());
+    fNEntryRight[0]->SetNumber(config.getRecordLength());
+    fNEntryRight[1]->SetNumber(config.getMaxEvents());
+    fNEntryRight[2]->SetNumber(config.getPostTrig());
+    fNEntryRight[3]->SetNumber(config.getInterrupt());
+
+    //setup output
+    fBHex->SetState((EButtonState)config.getHexLocation());
+    fBHeader->SetState((EButtonState)config.getHeader());
+    fBTest->SetState((EButtonState)config.getTestPattern());
+    fCBHardware->Select(config.getUSB());
+    fCBFileType->Select(config.getBinary());
+    fNum1->SetNumber(config.getDigitizerLoc(0));
+    fNum2->SetNumber(config.getDigitizerLoc(1));
+    if(config.getUSB())
+	fNum2->SetNumber(config.getDigitizerLoc(2));
+
+    //setupChan
+    fCBChan->RemoveAll();
+    fCBChan->AddEntry("Global", 0);
+    for(auto&& chan:config.getChConfigs())
+	fCBChan->AddEntry(TString(std::to_string(chan.first)),
+			  chan.first+1);
+
+    fCBChan->Select(0, false);
+    SetupChannel(0);
+    oldCh = 0;
+}
+
+void WaveConfigPopout::SetupChannel(UInt_t chNum)
+{
+    ChannelConfig chan = (chNum == 0) ?
+	config.getGlobalChan() : config.getChan(chNum-1);
+
+    fBEnabled->SetState((EButtonState)chan.getEnabled());
+    fNEntryOffset->SetNumber(chan.getDCOffset());
+    fNEntryChThreshold->SetNumber(chan.getTrigThreshold());
+    fCBChTrig->Select((UInt_t)chan.getChanTrig());
+}
+
+void WaveConfigPopout::SelectChannel(Int_t chNum)
+{
+    SaveChannel(oldCh);
+    oldCh = chNum;
+    SetupChannel(chNum);
+}
+
+void WaveConfigPopout::SaveChannel(UInt_t chNum)
+{
+    ChannelConfig chan(fBEnabled->GetState(),
+		       fNEntryOffset->GetNumber(),
+		       fNEntryChThreshold->GetNumber(),
+		       (ChannelTrigger)fCBChTrig->GetSelected());
+    if(chNum == 0)
+	config.setGlobalChan(chan);
+    else
+	config.addChannel(chNum-1, chan);
+}
+
+void WaveConfigPopout::AddChannel()
+{
+    TString chanName =std::to_string((UInt_t)fNEntryCh->GetNumber());
+    std::cout << "Adding... " << chanName << std::endl;
+    if(!fCBChan->FindEntry(chanName))
+	fCBChan->AddEntry(chanName,(UInt_t)fNEntryCh->GetNumber()+1);
+
+    fCBChan->Select(fNEntryCh->GetNumber()+1, true);
+}
+
+void WaveConfigPopout::WriteConfig()
+{
+    config.setInput(fCBHardware->GetSelected(),
+		    fNum1->GetNumber(),
+		    fNum2->GetNumber(),
+		    fBHex->GetState(),
+		    fNum3->GetNumber());
+    
+    config.setGnuPlotPath(fTEntryGnuPlot->GetText());
+    
+    config.setOutput(fCBFileType->GetSelected(),
+		     fBHeader->GetState(),
+		     fBTest->GetState(),
+		     fNEntryRight[0]->GetNumber());
+    
+    config.setConfig((ChannelTrigger)fCBExternalTrig->GetSelected(),
+		     fNEntryRight[1]->GetNumber(),
+		     fNEntryRight[2]->GetNumber(),
+		     true,
+		     fNEntryRight[3]->GetNumber(),
+		     fCBLogic->GetSelected());
+
+    config.write();
+}

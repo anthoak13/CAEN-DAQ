@@ -1,14 +1,14 @@
-/////////////////////////////////////////////////////////////////////////////////
-//                                                                             //
-//                             Copyright (C) 2016                              //
-//                     Adam Anthoony : All rights reserved                     //
-//                                                                             //
-//      This source code is licensed under the GNU GPL v3.0.You have the       //
-//      right to modify and/or redistribute this source code under the terms   //      
-//      specified in the license, which may be found online at                 //
-//      http://www.gnu.org/licenses.                                           //
-//                                                                             //
-/////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//                            Copyright (C) 2016                             //
+//                    Adam Anthoony : All rights reserved                    //
+//                                                                           //
+//     This source code is licensed under the GNU GPL v3.0.You have the      //
+//     right to modify and/or redistribute this source code under the terms  //
+//     specified in the license, which may be found online at                //
+//     http://www.gnu.org/licenses.                                          //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 //Class to track, read and create a wavedump config file
 //Adam Anthony 7/7/16
@@ -48,6 +48,7 @@ private:
     Float_t DCOffset;
     UInt_t triggerThreshold;
     ChannelTrigger triggerSetting;
+    
 public:
 
     ChannelConfig(const ChannelConfig &obj)
@@ -126,6 +127,24 @@ public:
 
     void setGlobalChan(const ChannelConfig &chIn);
     void addChannel(UInt_t chNum, const ChannelConfig &chIn);
+
+    Bool_t getBinary() { return _binary;}
+    Bool_t getHeader() { return _header;}
+    UShort_t getRecordLength() { return _recordLength;}
+    Bool_t getTestPattern() { return _testPattern;}
+    ChannelTrigger getExtTrig() { return _extTrig;}
+    UShort_t getMaxEvents() { return _maxEvents;}
+    UChar_t getPostTrig() { return _postTrig;}
+    Bool_t getTrigRising() { return _trigRising;}
+    UShort_t getInterrupt() { return _interrupt;}
+    Bool_t getNIM() { return _NIM;}
+    std::map<UInt_t, ChannelConfig> getChConfigs() { return chConfigs; }
+    ChannelConfig getChan(UInt_t chNum) { return chConfigs[chNum]; }
+    ChannelConfig getGlobalChan() { return globalChan; }
+    Bool_t getUSB() { return _USB;}
+    Bool_t getHexLocation() { return _hexLocation;} 
+    UInt_t getDigitizerLoc(int loc) { return _digitizerLoc[loc]; }
+    TString getGnuPlotPath() { return gnuPlotPath; }
 
     ClassDef(WavedumpConfig, 0)
 

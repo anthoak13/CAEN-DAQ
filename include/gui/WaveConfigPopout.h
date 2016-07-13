@@ -1,19 +1,21 @@
-/////////////////////////////////////////////////////////////////////////////////
-//                                                                             //
-//                             Copyright (C) 2016                              //
-//                     Adam Anthoony : All rights reserved                     //
-//                                                                             //
-//      This source code is licensed under the GNU GPL v3.0.You have the       //
-//      right to modify and/or redistribute this source code under the terms   //      
-//      specified in the license, which may be found online at                 //
-//      http://www.gnu.org/licenses.                                           //
-//                                                                             //
-/////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//                            Copyright (C) 2016                             //
+//                    Adam Anthoony : All rights reserved                    //
+//                                                                           //
+//     This source code is licensed under the GNU GPL v3.0.You have the      //
+//     right to modify and/or redistribute this source code under the terms  //
+//     specified in the license, which may be found online at                //
+//     http://www.gnu.org/licenses.                                          //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 #ifndef __WAVECONFIGPOPOUT_H
 #define __WAVECONFIGPOPOUT_H
 
 #include "gui.h"
+#include <string>
+
 class MainFrame;
 class WaveConfigPopout {
     RQ_OBJECT("WaveConfigPopout");
@@ -24,6 +26,7 @@ private:
     TGGroupFrame *fAdcOutput, *fChannels;
     TGHorizontalFrame *fHardware, *fFile, *fHardwareLabel;
     TGVerticalFrame *f2, *f1;
+    //ADC output
     TGNumberEntry *fNum1, *fNum2, *fNum3;
     TGCheckButton *fBHex, *fBHeader, *fBTest;
     TGComboBox *fCBHardware, *fCBFileType;
@@ -46,6 +49,8 @@ private:
     TGHorizontalFrame *fButtons;
     WavedumpConfig config;
     TString path;
+    UInt_t oldCh;
+    
 #ifndef __CINT__
     const char *fLabelRight[7] = {
     "GNU Plot path",
@@ -56,6 +61,11 @@ private:
     "Event post trigger",
     "Inturrupt"};
 #endif
+
+    void SetupChannel(UInt_t);
+    void SaveChannel(UInt_t);
+    void LoadConfig();
+    void WriteConfig();
     
 public:
     WaveConfigPopout(const TGWindow *p, const TGWindow *main, MainFrame *mainFrame);
@@ -63,8 +73,8 @@ public:
     void CloseWindow();
     void DoOk();
     void DoCancel();
-    void LoadConfig();
-    void WriteConfig();
+    void SelectChannel(Int_t);
+    void AddChannel();
 
 };
 #endif

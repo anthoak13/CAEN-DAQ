@@ -81,7 +81,7 @@ endif
 #*************************#
 # Rules to build the libraries
 default : $(SO)
-	@echo "$(SRCS)"
+	@echo "Done"
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLS)
 	@echo  "Building object file '$@' ..."
@@ -98,6 +98,7 @@ $(SO) : $(OBJS) $(ROOTDICO)
 build : $(GUIO) $(SO)
 	@echo "Compiling macro $(GUISCR)"
 	@$(CXX) -Dstand -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
+	@echo "Done"
 
 #***********************************************#
 # Rules to generate the necessary ROOT dictionary

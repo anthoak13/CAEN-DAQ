@@ -1,14 +1,14 @@
-/////////////////////////////////////////////////////////////////////////////////
-//                                                                             //
-//                             Copyright (C) 2016                              //
-//                     Adam Anthoony : All rights reserved                     //
-//                                                                             //
-//      This source code is licensed under the GNU GPL v3.0.You have the       //
-//      right to modify and/or redistribute this source code under the terms   //      
-//      specified in the license, which may be found online at                 //
-//      http://www.gnu.org/licenses.                                           //
-//                                                                             //
-/////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//                            Copyright (C) 2016                             //
+//                    Adam Anthoony : All rights reserved                    //
+//                                                                           //
+//     This source code is licensed under the GNU GPL v3.0.You have the      //
+//     right to modify and/or redistribute this source code under the terms  //
+//     specified in the license, which may be found online at                //
+//     http://www.gnu.org/licenses.                                          //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 
 //Implementation of wavedump config class
 
@@ -223,7 +223,7 @@ void WavedumpConfig::read()
 	
 	if(id == "GNUPLOT_PATH")
 	{
-	    gnuPlotPath = result(1, result.Length()-1);
+	    gnuPlotPath = result(1, result.Length()-2);
 	}
 
 	if(id == "OUTPUT_FILE_FORMAT")
@@ -260,7 +260,7 @@ void WavedumpConfig::read()
 	    else success &= false;
 	}
 
-	if(id == "MAX_NUM_EVENTS")
+	if(id == "MAX_NUM_EVENTS_BLT")
 	{
 	    _maxEvents =  result.Atoi();
 	}
@@ -293,7 +293,7 @@ void WavedumpConfig::read()
 	    common = false;
 	    //We have a channel to read, get ch number
 	    Ssiz_t chan = id.Index(TRegexp("\\[[0-9]*\\]"));
-	    chan = TString(id(chan, id.Length() - chan - 1)).Atoi();
+	    chan = TString(id(1, id.Length() - 2)).Atoi();
 	    std::cout << "Found ch: " << chan << endl;
 	    //Add channel to map
 	    ChannelConfig temp;
