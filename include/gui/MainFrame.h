@@ -47,7 +47,7 @@ private:
     TGHorizontalFrame *f15, *f16, *f17;
 
     TGMenuBar *fMenuBar;
-    TGPopupMenu *fMenuFile, *fMenuAcq;
+    TGPopupMenu *fMenuFile, *fMenuAcq, *fMenuSpectra;
     TGLayoutHints *fLMenuBar, *fLMenuBarItem;
     
     TString inputTemplate, meta;
@@ -72,11 +72,16 @@ private:
 
     M_FILE_OPEN,
     M_FILE_LINK,
-    M_FILE_EXIT
+    M_FILE_EXIT,
+
+    M_SPECTRA_CALIB
 };
 
     
 public:
+
+    Double_t slope = 1;
+    Double_t intercept = 0;
     MainFrame(const TGWindow *,UInt_t , UInt_t);
     virtual ~MainFrame();
     void closeWindow();

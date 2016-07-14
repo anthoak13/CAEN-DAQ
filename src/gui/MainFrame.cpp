@@ -16,6 +16,7 @@
 #include "DAQPopout.h"
 #include "WaveConfigPopout.h"
 #include "WavedumpConfig.h"
+#include "ECalibrationPopout.h"
 #include "../SignalProcessor.h"
 #include "../DataProcessor.h"
 #include "../Digitizer.h"
@@ -50,14 +51,20 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fMenuAcq->AddEntry("&Start...", M_ACQ_START);
     fMenuAcq->AddEntry("&Config...", M_ACQ_CONFIG);
 
+    fMenuSpectra = new TGPopupMenu(gClient->GetRoot());
+    fMenuSpectra->AddEntry("&Calibrate", M_SPECTRA_CALIB);
+
     fMenuFile->Connect("Activated(Int_t)", "MainFrame", this,
 		       "HandleMenu(Int_t)");
     fMenuAcq->Connect("Activated(Int_t)", "MainFrame", this,
+		       "HandleMenu(Int_t)");
+    fMenuSpectra->Connect("Activated(Int_t)", "MainFrame", this,
 		       "HandleMenu(Int_t)");
 
     fMenuBar = new TGMenuBar(fMain, 1, 1, kHorizontalFrame);
     fMenuBar->AddPopup("&File", fMenuFile, fLMenuBarItem);
     fMenuBar->AddPopup("&Wavedump", fMenuAcq, fLMenuBarItem);
+    fMenuBar->AddPopup("&Spectra", fMenuSpectra, fLMenuBarItem);
     fMain->AddFrame(fMenuBar, fLMenuBar);
 
     
@@ -375,7 +382,10 @@ void MainFrame::DoDrawMult()
     for(int i = 0; i < numEntries; i++)
     {
 	tree->GetEntry(i);
-	h1->Fill(temp);
+	if(fComboDisp->GetSelected() == 0)
+	    h1->Fill(temp*slope + intercept);
+	else
+	    h1->Fill(temp);
     }
 
     //draw hist
@@ -450,6 +460,9 @@ void MainFrame::HandleMenu(Int_t id)
 	break;
     case M_ACQ_CONFIG:
 	new WaveConfigPopout(gClient->GetRoot(), fMain, this);
+	break;
+    case M_SPECTRA_CALIB:
+	new ECalibrationPopout(gClient->GetRoot(), fMain, this);
 	break;
     }
 	

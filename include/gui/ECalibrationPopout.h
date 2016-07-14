@@ -10,13 +10,30 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __ECALIBRATIONPOPOUT_H
+#define __ECALIBRATIONPOPOUT_H
 
+#include "gui.h"
 
-void run()
-{
-    gInterpreter->AddIncludePath("include");
-    gInterpreter->AddIncludePath("include/gui");
-    gSystem->Load("lib/libCAENDigitizer.so");
-    gSystem->Load("lib/libCAENGui.so");
-    gROOT->ProcessLine(".x gui.C");
-}
+class MainFrame;
+
+class ECalibrationPopout {
+    RQ_OBJECT("ECalibrationPopout");
+    
+private:
+    TGTransientFrame *fMain;
+    TGHorizontalFrame *fFrameLabel, *fFrameButtons;
+    TGHorizontalFrame *fFrameNumber[2];
+    TGTextButton *fBOk, *fBCancel;
+    TGNumberEntryField *fNEntryRaw[2], *fNEntryCalibrated[2];
+    MainFrame *mainFrame;
+    Double_t *line[2];
+    
+public:
+    ECalibrationPopout(const TGWindow*, const TGWindow*,  MainFrame*);
+    virtual ~ECalibrationPopout();
+    void CloseWindow();
+    void DoOk();
+    void DoCancel();
+};
+#endif

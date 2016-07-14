@@ -3,6 +3,7 @@
 *.pcm
 *.out
 *.txt
+*.png
 data_in*
 WaveDumpConfig.txt
 *.rootmap
