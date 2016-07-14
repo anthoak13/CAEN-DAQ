@@ -50,6 +50,7 @@ private:
     UInt_t _timestamp;
     Float_t _zero;
     Float_t _Q;
+    Float_t _QDC;
     
 
     bool loadFiles(TString, const UInt_t);
@@ -79,6 +80,7 @@ public:
     Float_t getQ();
     Float_t getZero();
     Float_t getBaseline();
+    Float_t getQDC();
 
     const std::vector<int> getSignal();
     const std::vector<int> getDeriv();

@@ -352,3 +352,13 @@ int SignalProcessor::s(int* signal, const int n)
     return ret;
 }
 
+Float_t SignalProcessor::QDC(std::vector<int> *signal, const int start, const int length)
+{
+    int Q = 0;
+    for(int i = 0; i < length; i++)
+    {
+	Q += (*signal)[start+i];
+    }
+    return ((Float_t)Q)/length;
+    
+}

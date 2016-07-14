@@ -36,7 +36,7 @@ DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t nu
     populateEventMap();
 
     //set signalProcessor up
-    signalProcessor.setDecayTime(13);
+    signalProcessor.setDecayTime(12);
     signalProcessor.setFlatMult(2.0/3.0);
     signalProcessor.setOffset(16);
     signalProcessor.setScaling(0.8);
@@ -66,6 +66,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     _timestamp = 0;
     _zero = 0;
     _Q = 0;
+    _QDC = 0;
 
     //Seek to event
     fseek(files[f], eventMap[event], SEEK_SET);
@@ -108,6 +109,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     signalProcessor.trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
     _Q = signalProcessor.peakFind(trap.begin() + _zero, trap.begin() + _zero +
 				  metaData[f][4] - metaData[f][3]);
+    _QDC = signalProcessor.QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
     _timestamp = header[5];//TODO
     
     return 0;
@@ -120,6 +122,7 @@ int DataProcessor::processFiles(bool verbose)
 {
     //Variables to store
     Float_t Q[_numCh];
+    Float_t QDC[_numCh];
     Float_t zero[_numCh];
     UInt_t timestamp[_numCh];
     Float_t baseline[_numCh];
@@ -138,6 +141,9 @@ int DataProcessor::processFiles(bool verbose)
 	//Fill the tree
 	tmacro_tree[i]->Branch(Form("Q_%i", i), &Q[i], Form("Q_%i/F", i));
 	macro_tree->Branch(Form("Q_%i", i), &Q[i], Form("Q_%i/F", i));
+
+	tmacro_tree[i]->Branch(Form("QDC_%i", i), &QDC[i], Form("QDC_%i/F", i));
+	macro_tree->Branch(Form("QDC_%i", i), &QDC[i], Form("QDC_%i/F", i));
 
 	tmacro_tree[i]->Branch(Form("baseline_%i", i), &baseline[i], Form("baseline_%i/F", i));
 	macro_tree->Branch(Form("baseline_%i", i), &baseline[i], Form("baseline_%i/F", i));
@@ -160,6 +166,7 @@ int DataProcessor::processFiles(bool verbose)
 	    for( int i = 0; i < eventMap.size(); i++)
 	    {
 		Q[f] = 0.0;
+		QDC[f] = 0.0;
 		zero[f] = 0;
 		timestamp[f] = 0;
 		baseline[f] = 0;
@@ -174,13 +181,14 @@ int DataProcessor::processFiles(bool verbose)
 	
 	for(int event = 0; event < eventMap.size(); event++)
 	{
-	    if(verbose && event%10000 == 0)
+	    if(verbose && event%50000 == 0)
 		std::cout << "Processing event: " << event << std::endl;
 	    processEvent(f, event);
 	    baseline[f] = _baseline;
 	    zero[f] = _zero;
 
 	    Q[f] = _Q;
+	    QDC[f] = _QDC;
 	    timestamp[f] = _timestamp;
 
 	    //if(verbose && _Q > 570000 && _Q < 580000)
@@ -233,6 +241,7 @@ UInt_t DataProcessor::getEventLength() { return _eventLength; }
 UInt_t DataProcessor::getHeaderLength() { return _headerLength; }
 UInt_t DataProcessor::getTimestamp() { return _timestamp; }
 UInt_t DataProcessor::getNumCh() { return files.size(); }
+Float_t DataProcessor::getQDC() { return _QDC; }
 Float_t DataProcessor::getQ() { return _Q; }
 Float_t DataProcessor::getZero() { return _zero; }
 Float_t DataProcessor::getBaseline() { return _baseline; }

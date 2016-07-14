@@ -187,6 +187,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fComboDisp->AddEntry("Q", 0);
     fComboDisp->AddEntry("Zero", 1);
     fComboDisp->AddEntry("Baseline", 2);
+    fComboDisp->AddEntry("QCD", 3);
     f13->AddFrame(fComboDisp, fHLabel);
     f13->AddFrame(fLabelDisp, fHLabel);
     fComboDisp->Resize(70, 20);
@@ -372,6 +373,9 @@ void MainFrame::DoDrawMult()
     case 2:
 	tree->SetBranchAddress(Form("baseline_%i", (int)fEntryCh2->GetNumber()), &temp);
 	break;
+    case 3:
+	tree->SetBranchAddress(Form("QDC_%i", (int)fEntryCh2->GetNumber()), &temp);
+	break;
     }
     
     //create hist and fill it
@@ -450,7 +454,7 @@ void MainFrame::HandleMenu(Int_t id)
 	new DAQPopout(gClient->GetRoot(), fMain, this, &inputTemplate, &meta, &numCh, &headerLength);
 	break;
     case M_FILE_LINK:
-	gROOT->ProcessLine(".! . ./link.sh");
+	gROOT->ProcessLine(".! . ./scripts/link.sh");
 	break;
     case M_FILE_EXIT:
 	closeWindow();

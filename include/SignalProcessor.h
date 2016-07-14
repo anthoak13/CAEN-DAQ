@@ -76,7 +76,8 @@ public:
     Double_t getScaling();
     Int_t getThreshold();
 
-    void trapFilter(std::vector<int>*, const int, const int);
+    void trapFilter(std::vector<int> *signal, const int start, const int length);
+    Float_t QDC(std::vector<int> *signal, const int start, const int length);
 
     void CFD(std::vector<double>*, const int, const int, const int);
     void CFD(std::vector<double>*, const int);
