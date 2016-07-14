@@ -15,6 +15,9 @@
 #include "MainFrame.h"
 #include <iostream>
 
+std::vector<Double_t> ECalibrationPopout::raw = {0,1};
+std::vector<Double_t> ECalibrationPopout::calibrated = {0, 1};
+
 ECalibrationPopout::ECalibrationPopout(const TGWindow *p, const TGWindow *w, MainFrame *main)
 {
     mainFrame = main;
@@ -35,9 +38,9 @@ ECalibrationPopout::ECalibrationPopout(const TGWindow *p, const TGWindow *w, Mai
     for(int i = 0; i < 2; i++)
     {
 	fFrameNumber[i] = new TGHorizontalFrame(fMain);
-	fNEntryRaw[i] = new TGNumberEntryField(fFrameNumber[i]);
+	fNEntryRaw[i] = new TGNumberEntryField(fFrameNumber[i], -1, raw[i]);
 	fNEntryRaw[i]->Resize(80, 20);
-	fNEntryCalibrated[i] = new TGNumberEntryField(fFrameNumber[i]);
+	fNEntryCalibrated[i] = new TGNumberEntryField(fFrameNumber[i], -1, calibrated[i]);
 	fNEntryCalibrated[i]->Resize(80, 20);
 	fFrameNumber[i]->AddFrame(fNEntryRaw[i], fLHintEntry);
 	fFrameNumber[i]->AddFrame(fNEntryCalibrated[i], fLHintEntry);
@@ -72,13 +75,14 @@ void ECalibrationPopout::CloseWindow() { delete this; }
 
 void ECalibrationPopout::DoOk()
 {
-    mainFrame->slope = (fNEntryCalibrated[0]->GetNumber() -
-		   fNEntryCalibrated[1]->GetNumber())/
-	(fNEntryRaw[0]->GetNumber() - fNEntryRaw[1]->GetNumber());
-    mainFrame->intercept = - mainFrame->slope * fNEntryRaw[0]->GetNumber() +
-	fNEntryCalibrated[0]->GetNumber();
+    for(int i = 0; i < 2; i++)
+    {
+	calibrated[i] = fNEntryCalibrated[i]->GetNumber();
+	raw[i] = fNEntryRaw[i]->GetNumber();
+    }
 
-    std::cout << mainFrame->slope << " " << mainFrame->intercept << std::endl;
+    mainFrame->slope = (calibrated[0] - calibrated[1])/(raw[0]-raw[1]);
+    mainFrame->intercept = calibrated[1] - raw[1] * mainFrame->slope;
     CloseWindow();
 }
 

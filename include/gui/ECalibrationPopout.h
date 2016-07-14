@@ -14,6 +14,7 @@
 #define __ECALIBRATIONPOPOUT_H
 
 #include "gui.h"
+#include <vector>
 
 class MainFrame;
 
@@ -27,7 +28,8 @@ private:
     TGTextButton *fBOk, *fBCancel;
     TGNumberEntryField *fNEntryRaw[2], *fNEntryCalibrated[2];
     MainFrame *mainFrame;
-    Double_t *line[2];
+    static std::vector<Double_t> raw;
+    static std::vector<Double_t> calibrated;
     
 public:
     ECalibrationPopout(const TGWindow*, const TGWindow*,  MainFrame*);

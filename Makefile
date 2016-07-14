@@ -112,7 +112,7 @@ $(ROOTDICO) : $(ROOTDICSRC)
 $(ROOTDICSRC) : $(ROOTDICH) Linkdef.h
 	@echo  "Generating ROOT dictionary '$@' ..."
 ifeq ($(VERSION), 5)
-	@rootcint -f $@ -c  $^
+	@rootcint -f $@ -c -p $^
 	@rlibmap -f -o gui.rootmap -l $(SO) -c Linkdef.h
 else
 	@rootcling -f $@ -rml $(SO) -rmf gui.rootmap $^

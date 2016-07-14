@@ -3,7 +3,7 @@ if [ -e file_list.txt ]; then
     rm file_list.txt
 fi
 ### set number of channels
-numchannel=32
+numchannel=8
 pathtodata='/home/adam/data/molly'
 ### set the soft links to the raw data files
 ls -rth $pathtodata/*.dat | tail -$numchannel > file_list.txt
