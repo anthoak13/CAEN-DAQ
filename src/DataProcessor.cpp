@@ -14,6 +14,8 @@
 //Adam Anthony 6/30/16
 
 #include "DataProcessor.h"
+#include "TBenchmark.h"
+
 ClassImp(DataProcessor);
 
 DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t numFiles, const UInt_t headerLength)
@@ -41,11 +43,21 @@ DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t nu
     signalProcessor.setOffset(16);
     signalProcessor.setScaling(0.8);
     signalProcessor.setThreshold(-17);
+#ifdef DEBUG
+    bench = new TBenchmark();
+    std::cout << "Making bench: " << bench << std::endl;
+#endif
 }
 
 DataProcessor::~DataProcessor()
 {
-
+#ifdef DEBUG
+    if(!bench)
+    {
+	std::cout << "Bench: " << bench << std::endl;
+	delete bench;
+    }
+#endif
 }
 //return 1: event too large
 //return 0: success 
@@ -54,7 +66,11 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     //make sure the event is valid
     if(event >= getNumEvents())
 	return 1;
-
+    
+#ifdef DEBUG
+    bench->Start("processEvent");
+#endif
+    
     //Reset all variables
     signal.clear();
     cfd.clear();
@@ -96,21 +112,53 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     }
 	
     //find derivative and cfd
+#ifdef DEBUG
+    bench->Stop("processEvent");
+    bench->Start("Derivative");
+#endif
     deriv = signalProcessor.interpolateDeriv(&signal, _interpMult);
+#ifdef DEBUG
+    bench->Stop("Derivative");
+    bench->Start("CFD");
+#endif
     cfd = deriv;
     signalProcessor.CFD(&cfd);
-    
+#ifdef DEBUG
+    bench->Stop("CFD");
+    bench->Start("Zero");
+#endif
     //Variables
     _zero = signalProcessor.zeroAfterThreshold(&cfd)/_interpMult;
 
     //correct zero
     if(_zero + (metaData[f][4]-metaData[f][3]) > trap.size())
 	_zero = metaData[f][3];
+
+#ifdef DEBUG
+    bench->Stop("Zero");
+    bench->Start("TrapFilter");
+#endif
     signalProcessor.trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
+#ifdef DEBUG
+    bench->Stop("TrapFilter");
+    bench->Start("Peakfind");
+#endif
     _Q = signalProcessor.peakFind(trap.begin() + _zero, trap.begin() + _zero +
 				  metaData[f][4] - metaData[f][3]);
+#ifdef DEBUG
+    bench->Stop("PeakFind");
+    bench->Start("QDC");
+#endif
     _QDC = signalProcessor.QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
+#ifdef DEBUG
+      bench->Start("QDC");
+#endif
     _timestamp = header[5];//TODO
+
+#ifdef DEBUG
+    if(_Q < 0)
+	std::cout << "Failed event at: " << event << std::endl;
+#endif
     
     return 0;
 
@@ -229,7 +277,11 @@ int DataProcessor::processFiles(bool verbose)
 
     if(verbose)
 	std::cout << "Done "<< std::endl;
-    
+
+#ifdef DEBUG
+    Float_t a,b;
+    bench->Summary(a,b);
+#endif
     //merge trees
     //delete temp trees
     return 0;

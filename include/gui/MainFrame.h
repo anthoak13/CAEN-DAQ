@@ -16,6 +16,7 @@
 
 #include "gui.h"
 #include "TTimer.h"
+#include <vector>
 
 class DataProcessor;
 //Definition of MainFrame
@@ -52,6 +53,8 @@ private:
     
     TString inputTemplate, meta;
     UInt_t numCh, headerLength;
+
+    std::vector< TH1F* > hist;
 
     TTimer *timer;
     TGStatusBar *fStatusBar;

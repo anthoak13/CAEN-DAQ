@@ -72,7 +72,8 @@ else
 	CXX = $(shell $(RC) --cxx)
 endif
 
-
+debug: CXXFLAGS += -DDEBUG -g
+debug: build
 
 #***************#
 #**** RULES ****#

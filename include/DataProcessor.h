@@ -28,6 +28,10 @@
 #endif
 #include "SignalProcessor.h"
 
+//Forward Declerations
+class TBenchmark;
+
+//Class def
 class DataProcessor : public TObject
 {
 private:
@@ -51,6 +55,8 @@ private:
     Float_t _zero;
     Float_t _Q;
     Float_t _QDC;
+
+    TBenchmark *bench;
     
 
     bool loadFiles(TString, const UInt_t);

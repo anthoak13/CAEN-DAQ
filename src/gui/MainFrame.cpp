@@ -295,7 +295,7 @@ void MainFrame::DoDraw()
     //Process the event
     dataP->processEvent(fEntryCh->GetNumber(), fEntryEvent->GetNumber());
 
-    std::vector< TH1F* > hist;
+    hist.clear();
     //Loop through the options and create a canvas with all of the checked boxes
     for(int i = 0; i < 5; i++)
     {
@@ -336,6 +336,19 @@ void MainFrame::DoDraw()
 		hist.back()->SetLineWidth(2);
 		hist.back()->Draw("hist same");
 	    }
+#ifdef DEBUG
+	    if( i == 1 )
+	    {
+		hist.push_back(new TH1F("h5", "Q val", output.size(), 0, output.size()));
+		for(int j = 0; j < output.size(); j++)
+		    hist.back()->Fill(j, dataP->getQ());
+		
+		//Draw hist
+		hist.back()->SetLineColor(7);
+		hist.back()->SetLineWidth(2);
+		hist.back()->Draw("hist same");
+	    }
+#endif
 	}
     }
     
