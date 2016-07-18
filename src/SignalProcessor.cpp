@@ -210,8 +210,8 @@ int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>
     if(validPeaks)
 	returnValue = TMath::Mean(peak1, peak2);
     else
-	//returnValue = *(TMath::LocMax(start, end));
-	returnValue = -1;
+	returnValue = *(TMath::LocMax(start, end));
+	//returnValue = -1;
     
     return returnValue;
 	

@@ -67,10 +67,6 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     if(event >= getNumEvents())
 	return 1;
     
-#ifdef DEBUG
-    bench->Start("processEvent");
-#endif
-    
     //Reset all variables
     signal.clear();
     cfd.clear();
@@ -112,47 +108,22 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     }
 	
     //find derivative and cfd
-#ifdef DEBUG
-    bench->Stop("processEvent");
-    bench->Start("Derivative");
-#endif
     deriv = signalProcessor.interpolateDeriv(&signal, _interpMult);
-#ifdef DEBUG
-    bench->Stop("Derivative");
-    bench->Start("CFD");
-#endif
     cfd = deriv;
     signalProcessor.CFD(&cfd);
-#ifdef DEBUG
-    bench->Stop("CFD");
-    bench->Start("Zero");
-#endif
+
     //Variables
     _zero = signalProcessor.zeroAfterThreshold(&cfd)/_interpMult;
-
+    
     //correct zero
     if(_zero + (metaData[f][4]-metaData[f][3]) > trap.size())
 	_zero = metaData[f][3];
 
-#ifdef DEBUG
-    bench->Stop("Zero");
-    bench->Start("TrapFilter");
-#endif
     signalProcessor.trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
-#ifdef DEBUG
-    bench->Stop("TrapFilter");
-    bench->Start("Peakfind");
-#endif
     _Q = signalProcessor.peakFind(trap.begin() + _zero, trap.begin() + _zero +
 				  metaData[f][4] - metaData[f][3]);
-#ifdef DEBUG
-    bench->Stop("PeakFind");
-    bench->Start("QDC");
-#endif
     _QDC = signalProcessor.QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
-#ifdef DEBUG
-      bench->Start("QDC");
-#endif
+    _Q = trap[0];
     _timestamp = header[5];//TODO
 
 #ifdef DEBUG
@@ -231,7 +202,9 @@ int DataProcessor::processFiles(bool verbose)
 	{
 	    if(verbose && event%50000 == 0)
 		std::cout << "Processing event: " << event << std::endl;
+	    bench->Start("Process");
 	    processEvent(f, event);
+	    bench->Stop("Process");
 	    baseline[f] = _baseline;
 	    zero[f] = _zero;
 
