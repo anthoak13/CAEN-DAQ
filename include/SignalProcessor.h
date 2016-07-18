@@ -87,6 +87,7 @@ public:
     int zeroAfterThreshold(std::vector<double>*);
 
     std::vector<double> interpolateDeriv(std::vector<int>*, const int);
+    std::vector<double> deriv(std::vector<int>*);
 
     int peakFind(std::vector<int>::iterator, std::vector<int>::iterator);
 

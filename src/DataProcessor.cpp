@@ -24,7 +24,7 @@ DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t nu
 	return;
     //set any variables
     setHeaderLength(headerLength);
-    setInterpMult(2);
+    setInterpMult(1);
     setNumCh(numFiles);
 
     //set the metaData
@@ -107,13 +107,12 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	trap.push_back(sig);
     }
 	
-    //find derivative and cfd
-    deriv = signalProcessor.interpolateDeriv(&signal, _interpMult);
+    deriv = signalProcessor.deriv(&signal);
     cfd = deriv;
     signalProcessor.CFD(&cfd);
 
     //Variables
-    _zero = signalProcessor.zeroAfterThreshold(&cfd)/_interpMult;
+    _zero = signalProcessor.zeroAfterThreshold(&cfd);
     
     //correct zero
     if(_zero + (metaData[f][4]-metaData[f][3]) > trap.size())
@@ -122,13 +121,16 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     signalProcessor.trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
     _Q = signalProcessor.peakFind(trap.begin() + _zero, trap.begin() + _zero +
 				  metaData[f][4] - metaData[f][3]);
+    
     _QDC = signalProcessor.QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
-    _Q = trap[0];
     _timestamp = header[5];//TODO
 
 #ifdef DEBUG
     if(_Q < 0)
+    {
 	std::cout << "Failed event at: " << event << std::endl;
+	_badEvents++;
+    }
 #endif
     
     return 0;
@@ -145,6 +147,7 @@ int DataProcessor::processFiles(bool verbose)
     Float_t zero[_numCh];
     UInt_t timestamp[_numCh];
     Float_t baseline[_numCh];
+    _badEvents = 0;
 
     //ROOT objects for storage
     TFile* rootFile = new TFile("macro.root", "RECREATE");
@@ -254,6 +257,7 @@ int DataProcessor::processFiles(bool verbose)
 #ifdef DEBUG
     Float_t a,b;
     bench->Summary(a,b);
+    std::cout << "skipped " << _badEvents << " bad events." << std::endl;
 #endif
     //merge trees
     //delete temp trees
@@ -270,6 +274,7 @@ Float_t DataProcessor::getQDC() { return _QDC; }
 Float_t DataProcessor::getQ() { return _Q; }
 Float_t DataProcessor::getZero() { return _zero; }
 Float_t DataProcessor::getBaseline() { return _baseline; }
+UInt_t DataProcessor::getBadEvents() { return _badEvents; }
 SignalProcessor* DataProcessor::getSignalP() { return &signalProcessor; }
 const std::vector<int> DataProcessor::getSignal() { return signal; }
 const std::vector<int> DataProcessor::getTrap() { return trap; }

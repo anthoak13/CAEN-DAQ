@@ -123,13 +123,13 @@ int SignalProcessor::zeroAfterThreshold(std::vector<double>* signal, const int t
 	while(*it > threshold && it != signal->end()) { it++; }
 	
 	//Find the next zero after the threshold
-	while(*it < 0 && it != signal->end()) { it++; }
+	while(*it <= 0 && it != signal->end()) { it++; }
     } else {
 	//Find point where signal first rises above threshold
 	while(*it > threshold && it != signal->end()) { it++; }
 	
 	//Find the next zero after the threshold
-	while(*it < 0 && it != signal->end()) { it++; }
+	while(*it <= 0 && it != signal->end()) { it++; }
     }
 
     if(it == signal->end())
@@ -154,17 +154,28 @@ std::vector<double> SignalProcessor::interpolateDeriv(std::vector<int>* signal, 
     return out;
 }
 
+std::vector<double> SignalProcessor::deriv(std::vector<int>* signal)
+{
+    std::vector<double> out;
+    for(int i = 1; i < signal->size(); i++)
+	out.push_back(signal->at(i) - signal->at(i-1));
+
+    return out;
+}
+
 //Uses the change in derivative at the beginning and end of the flat top to
 //find the peak value. If the derivative doesn't change as expected, ie it is exeptionally
 //smooth, it returns a simple maximum of the trapazoid
 int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>::iterator end)
 {
+    const double thresh = 0.10;
     std::vector<int>::iterator peak1;
     std::vector<int>::iterator mid;
     std::vector<int>::iterator peak2;
     bool posDeriv = (*(start+1) - *start) > 0;
     std::vector<int>::iterator it = start;
-    bool validPeaks = true;
+    bool midValid = true;
+    bool secondValid = true;
     double val = 0.0;
 
     if(posDeriv)
@@ -176,47 +187,54 @@ int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>
 	//find mid
 	while(*(it + 1) < *it && it != end) { it++; }
 	mid = it;
-	//make sure mid/peak1 is within 20%
-	val = (*peak1 - *mid)/(double) *peak1;
-	validPeaks &= ( val < 0.20 && val > -.20 ); 
 
 	//Find second max
 	while(*(it + 1) > *it && it != end) { it++; }
 	peak2 = it;
-	//make sure peak1/2 are within 20% of eachother
-	val = (*peak1 - *peak2) / (double) *peak2;
-	validPeaks &= (  val < 0.20 &&  val > -.20 );
     }
     else
     {
 	//find 1st peak
-	while(*(it + 1) < *it && it != end) { it++; }
+	while(*(it + 1) > *it && it != end) { it++; }
 	peak1 = it;
 
 	//find mid
-	while(*(it + 1) > *it && it != end) { it++; }
+	while(*(it + 1) < *it && it != end) { it++; }
 	mid = it;
-	val = (*peak1 - *mid)/ (double)*peak1;
-	validPeaks &= ( val > -0.20 && val < 0.20); 
 
 	//Find second max
-	while(*(it + 1) < *it && it != end) { it++; }
+	while(*(it + 1) > *it && it != end) { it++; }
 	peak2 = it;
-	val = (*peak1 - *peak2) / (double) *peak2;
-	validPeaks &= ( val > -0.20 && val < 0.20); 
     }
 
+    //Check the validity of the peaks
+    val = (*peak1 - *mid)/(double) *peak1;
+    midValid = ( val < thresh && val > -thresh ); 
+    val = (*peak1 - *peak2) / (double) *peak2;
+    secondValid = ( val < thresh && val > -thresh );
+
+    
     int returnValue;
-    if(validPeaks)
-	returnValue = TMath::Mean(peak1, peak2);
+    if(midValid && secondValid)
+	if(peak1 != peak2)
+	    returnValue = TMath::Mean(peak1, peak2);
+	else
+	    returnValue = *peak1;
+    //XOR midValue and secondValue
+    else if(midValid != secondValid)
+    {
+	returnValue = -1; //Detect pileup
+	
+    }
     else
 	returnValue = *(TMath::LocMax(start, end));
-	//returnValue = -1;
+
+#ifdef DEBUG
+    if(returnValue < 0)
+	std::cout << "Peak 1: " << *peak1 << " mid: " << *mid << " peak2: " << *peak2 << " mean: " << returnValue << std::endl;
+#endif
     
     return returnValue;
-	
-
-
 }
 
 //*********Private functions ********************

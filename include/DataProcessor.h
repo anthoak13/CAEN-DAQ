@@ -55,6 +55,7 @@ private:
     Float_t _zero;
     Float_t _Q;
     Float_t _QDC;
+    UInt_t _badEvents;
 
     TBenchmark *bench;
     
@@ -87,7 +88,8 @@ public:
     Float_t getZero();
     Float_t getBaseline();
     Float_t getQDC();
-
+    UInt_t getBadEvents();
+    
     const std::vector<int> getSignal();
     const std::vector<int> getDeriv();
     const std::vector<int> getCFD();
