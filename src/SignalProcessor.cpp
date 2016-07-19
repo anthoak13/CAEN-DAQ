@@ -138,8 +138,12 @@ int SignalProcessor::zeroAfterThreshold(std::vector<double>* signal, const int t
     return std::distance(signal->begin(), it);
 }
 
-std::vector<double> SignalProcessor::interpolateDeriv(std::vector<int>* signal, const int multiplier)
+std::vector<double> SignalProcessor::deriv(std::vector<int>* signal, const UInt_t multiplier)
 {
+    if(multiplier < 2)
+	return nonInterpDeriv(signal);
+
+    
     setInter(signal);
     std::vector<double> out;
 
@@ -154,7 +158,7 @@ std::vector<double> SignalProcessor::interpolateDeriv(std::vector<int>* signal, 
     return out;
 }
 
-std::vector<double> SignalProcessor::deriv(std::vector<int>* signal)
+std::vector<double> SignalProcessor::nonInterpDeriv(std::vector<int>* signal)
 {
     std::vector<double> out;
     for(int i = 1; i < signal->size(); i++)
@@ -166,9 +170,9 @@ std::vector<double> SignalProcessor::deriv(std::vector<int>* signal)
 //Uses the change in derivative at the beginning and end of the flat top to
 //find the peak value. If the derivative doesn't change as expected, ie it is exeptionally
 //smooth, it returns a simple maximum of the trapazoid
-int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>::iterator end)
+int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>::iterator end, Float_t peakThresh)
 {
-    const double thresh = 0.10;
+    const double thresh = peakThresh;
     std::vector<int>::iterator peak1;
     std::vector<int>::iterator mid;
     std::vector<int>::iterator peak2;
@@ -215,12 +219,15 @@ int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>
 
     
     int returnValue;
+    //If the peak is valid get the average
     if(midValid && secondValid)
+	
 	if(peak1 != peak2)
 	    returnValue = TMath::Mean(peak1, peak2);
 	else
 	    returnValue = *peak1;
-    //XOR midValue and secondValue
+    
+    //XOR midValue and secondValue -> pileup
     else if(midValid != secondValid)
     {
 	returnValue = -1; //Detect pileup
@@ -253,57 +260,7 @@ void SignalProcessor::setInter(std::vector<int>* in)
     _inter = new ROOT::Math::Interpolator(x, y, ROOT::Math::Interpolation::kAKIMA);
     //std::cout << "Created" << std::endl;
 }
-/*
-void SignalProcessor::setD_kl(std::vector<int>* signal, const int start, const int length)
-{
-    int k = _decayTime;
-    int l = (int) (_flatMultiplier * 2 * _decayTime + k);
 
-    d_kl.reserve(length);
-    d_kl.clear();
-    //assumes k < l
-    for(int n = 0; n < length; n++)
-    {
-	int index = n+start;
-	d_kl.push_back(signal->at(index));
-
-	if(n-k >= 0)
-	    d_kl[n] -= signal->at(index-k);
-
-	if(n-l >= 0)
-	    d_kl[n] -= signal->at(index-l);
-
-	if(n-k-l >= 0)
-	    d_kl[n] += signal->at(index-k-l);
-    }
- }
-//signal is unmodified, assumes d_kl is properly set
-void SignalProcessor::setP(const int n)
-{
-    for(int i = 0; i < n; i++)
-    {
-	if(i ==0)
-	    _p.push_back(0);
-	else
-	    _p.push_back(_p[i-1] + d_kl[i]);
-    }
-}
-
-//modifies signal inplace, assumes d_kl and p are properly set
-int SignalProcessor::s(const int n)
-{
-    int ret = (_p[n] + d_kl[n] * _M);
-
-    //Base case
-    if(n < 1)
-	return ret;
-
-    //Not base
-    ret += s(n-1);
-    
-    return ret;
-}
-*/
 //signal is unmodified
 void SignalProcessor::setD_kl(int* signal, const int length)
 {

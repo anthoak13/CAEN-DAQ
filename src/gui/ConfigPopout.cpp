@@ -11,14 +11,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "ConfigPopout.h"
-#include "../SignalProcessor.h"
+#include "../DataProcessor.h"
 #include <iostream>
 
 
 //ConfigPopout implementaion********************
-ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, SignalProcessor *sigP)
+ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcessor *datP)
 {
-    signalP = sigP;
+    dataP = datP;
+    signalP = dataP->getSignalP();
     //create main framw
     fMain = new TGTransientFrame(p, main, 10, 10, kVerticalFrame);
     fMain->Connect("CloseWindow()", "ConfigPopout", this, "CloseWindow()");
@@ -53,7 +54,7 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, SignalProces
     f1->AddFrame(fTrap, fL1);
     f1->AddFrame(fZero, fL1);
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 4; i++)
     {
 	//Create frames and add to group frame
 	fNumTrap[i] = new TGHorizontalFrame(fTrap, 60, 20);
@@ -76,7 +77,10 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, SignalProces
 		default1 = signalP->getM();
 	        default2 = signalP->getThreshold();
 		break;
-	    
+	case 3:
+	    default1 = dataP->getPeakThresh();
+	    default2 = dataP->getInterpMult();
+	    break;
 	}
 	fEntryTrap[i] = new TGNumberEntry(fNumTrap[i], default1);
 	fEntryZero[i] = new TGNumberEntry(fNumZero[i], default2);
@@ -85,7 +89,7 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, SignalProces
 
 	//Add labels
 	fNumTrap[i]->AddFrame( new TGLabel(fNumTrap[i], fLabel[i]), fL2);
-	fNumZero[i]->AddFrame( new TGLabel(fNumZero[i], fLabel[i+3]), fL2);
+	fNumZero[i]->AddFrame( new TGLabel(fNumZero[i], fLabel[i+4]), fL2);
     }
 
     fMain->SetWindowName("Config");
@@ -106,6 +110,7 @@ void ConfigPopout::CloseWindow() { delete this; }
 void ConfigPopout::DoOk()
 {
     std::cout << "Saving changes to config" << std::endl;
+    
     //update shit
     signalP->setDecayTime(fEntryTrap[0]->GetNumber());
     signalP->setFlatMult(fEntryTrap[1]->GetNumber());
@@ -113,6 +118,10 @@ void ConfigPopout::DoOk()
     signalP->setOffset(fEntryZero[0]->GetNumber());
     signalP->setScaling(fEntryZero[1]->GetNumber());
     signalP->setThreshold(fEntryZero[2]->GetNumber());
+
+    dataP->setPeakThresh(fEntryTrap[3]->GetNumber());
+    dataP->setInterpMult(fEntryZero[3]->GetNumber());
+
     std::cout << "Updated config" << std::endl;
     CloseWindow();
 }

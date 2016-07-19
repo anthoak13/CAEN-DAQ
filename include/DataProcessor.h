@@ -42,6 +42,7 @@ private:
     UInt_t _eventLength;
     UInt_t _headerLength;
     UInt_t _interpMult;
+    Float_t _peakThresh;
     UInt_t _numCh;
     SignalProcessor signalProcessor;
 
@@ -66,11 +67,10 @@ private:
 
     void setHeaderLength(const UInt_t);
     void setMetaData(TString, UInt_t);
-    void setInterpMult(const UInt_t);
     void setNumCh(const UInt_t);
 
 public:
-    DataProcessor(TString, TString,  const UInt_t, const UInt_t);
+    DataProcessor(TString, TString,  const UInt_t, const UInt_t, const UInt_t);
     ~DataProcessor();
 
     int processEvent(UInt_t, UInt_t);
@@ -89,6 +89,12 @@ public:
     Float_t getBaseline();
     Float_t getQDC();
     UInt_t getBadEvents();
+    Float_t getPeakThresh();
+    UInt_t getInterpMult();
+
+    
+    void setPeakThresh(const Float_t);
+    void setInterpMult(const UInt_t);
     
     const std::vector<int> getSignal();
     const std::vector<int> getDeriv();

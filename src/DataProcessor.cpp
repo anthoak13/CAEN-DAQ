@@ -18,13 +18,13 @@
 
 ClassImp(DataProcessor);
 
-DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t numFiles, const UInt_t headerLength)
+DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t numFiles, const UInt_t headerLength, const UInt_t interpMult)
 {
     if(numFiles == 0)
 	return;
     //set any variables
     setHeaderLength(headerLength);
-    setInterpMult(1);
+    setInterpMult(interpMult);
     setNumCh(numFiles);
 
     //set the metaData
@@ -40,9 +40,11 @@ DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t nu
     //set signalProcessor up
     signalProcessor.setDecayTime(12);
     signalProcessor.setFlatMult(2.0/3.0);
-    signalProcessor.setOffset(16);
+    signalProcessor.setOffset(6);
     signalProcessor.setScaling(0.8);
     signalProcessor.setThreshold(-17);
+    setPeakThresh(0.10);
+
 #ifdef DEBUG
     bench = new TBenchmark();
     std::cout << "Making bench: " << bench << std::endl;
@@ -107,12 +109,12 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	trap.push_back(sig);
     }
 	
-    deriv = signalProcessor.deriv(&signal);
+    deriv = signalProcessor.deriv(&signal, _interpMult);
     cfd = deriv;
     signalProcessor.CFD(&cfd);
 
     //Variables
-    _zero = signalProcessor.zeroAfterThreshold(&cfd);
+    _zero = signalProcessor.zeroAfterThreshold(&cfd)/_interpMult;
     
     //correct zero
     if(_zero + (metaData[f][4]-metaData[f][3]) > trap.size())
@@ -120,7 +122,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 
     signalProcessor.trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
     _Q = signalProcessor.peakFind(trap.begin() + _zero, trap.begin() + _zero +
-				  metaData[f][4] - metaData[f][3]);
+				  metaData[f][4] - metaData[f][3], _peakThresh);
     
     _QDC = signalProcessor.QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
     _timestamp = header[5];//TODO
@@ -275,6 +277,8 @@ Float_t DataProcessor::getQ() { return _Q; }
 Float_t DataProcessor::getZero() { return _zero; }
 Float_t DataProcessor::getBaseline() { return _baseline; }
 UInt_t DataProcessor::getBadEvents() { return _badEvents; }
+Float_t DataProcessor::getPeakThresh() { return _peakThresh; }
+UInt_t DataProcessor::getInterpMult() { return _interpMult; }
 SignalProcessor* DataProcessor::getSignalP() { return &signalProcessor; }
 const std::vector<int> DataProcessor::getSignal() { return signal; }
 const std::vector<int> DataProcessor::getTrap() { return trap; }
@@ -295,9 +299,9 @@ const std::vector<int> DataProcessor::getCFD()
 
 //Private **********************************
 void DataProcessor::setHeaderLength(const UInt_t in) { _headerLength = in; }
-void DataProcessor::setInterpMult(const UInt_t in) { _interpMult = in; }
 void DataProcessor::setNumCh(const UInt_t in) { _numCh = in; }
-
+void DataProcessor::setInterpMult(const UInt_t in) { _interpMult = in; }
+void DataProcessor::setPeakThresh(const Float_t in) { _peakThresh = in; }
 
 //Load in files
 bool DataProcessor::loadFiles(TString fileTemplate, const UInt_t numFiles)

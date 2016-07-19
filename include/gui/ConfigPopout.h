@@ -15,6 +15,7 @@
 
 #include "gui.h"
 class SignalProcessor;
+class DataProcessor;
 //Definition of Config popout
 class ConfigPopout {
     RQ_OBJECT("ConfigPopout");
@@ -24,22 +25,27 @@ private:
     TGCompositeFrame *f1, *f2;
     TGGroupFrame *fTrap, *fZero;
     TGTextButton *bCancel, *bOK;
-    TGHorizontalFrame *fNumTrap[3], *fNumZero[3];
-    TGNumberEntry *fEntryTrap[3], *fEntryZero[3];
+    TGHorizontalFrame *fNumTrap[4], *fNumZero[4];
+    TGNumberEntry *fEntryTrap[4], *fEntryZero[4];
     SignalProcessor *signalP;
+    DataProcessor *dataP;
+    
+    
 #ifndef __CINT__
-    const char *fLabel[6] = {
+    const char *fLabel[8] = {
     "Rise time",
     "Top",
     "M",
+    "Peak Threshold",
     "Offset",
     "Scaling",
-    "Threshold"};
+    "Zero Threshold",
+    "Interpolation mult"};
 #endif
     
     
 public:
-    ConfigPopout(const TGWindow*, const TGWindow*, SignalProcessor*);
+    ConfigPopout(const TGWindow*, const TGWindow*, DataProcessor*);
     virtual ~ConfigPopout();
     void CloseWindow();
     void DoOk();

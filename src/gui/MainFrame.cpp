@@ -31,7 +31,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     meta = "";
     numCh = 16;
     headerLength = 6;
-    dataP = new DataProcessor("", "", 0, 0);
+    dataP = new DataProcessor("", "", 0, 0, 0);
     fMain = new TGMainFrame(p, w, h);
 
     //Make sure window closes
@@ -284,7 +284,7 @@ void MainFrame::welcome()
 void MainFrame::DoConfig()
 {
     std::cout << "Config pressed" << std::endl;
-    new ConfigPopout(gClient->GetRoot(), fMain, dataP->getSignalP());
+    new ConfigPopout(gClient->GetRoot(), fMain, dataP);
 }
 
 void MainFrame::DoDraw()
@@ -421,19 +421,19 @@ void MainFrame::DoAcquisitionClosed()
 {
     std::cout << "updating DAQ info" << std::endl;
     
-    UpdateDataProcessor(inputTemplate, meta, numCh, headerLength);
+    UpdateDataProcessor(inputTemplate, meta, numCh, headerLength, interpMult);
 
     std::cout << "DAQ updated" << std::endl;
 }
 
-void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t numCh, UInt_t headerLength)
+void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t numCh, UInt_t headerLength, UInt_t interpMult)
 {
     delete dataP;
     try {
-	dataP = new DataProcessor(templateIn, meta, numCh, headerLength);
+	dataP = new DataProcessor(templateIn, meta, numCh, headerLength, interpMult);
     } catch(std::exception &e) {
 	std::cout << e.what() << std::endl;
-	dataP = new DataProcessor("", "", 0, 0);
+	dataP = new DataProcessor("", "", 0, 0, 0);
     }
 	
 

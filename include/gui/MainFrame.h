@@ -52,7 +52,7 @@ private:
     TGLayoutHints *fLMenuBar, *fLMenuBarItem;
     
     TString inputTemplate, meta;
-    UInt_t numCh, headerLength;
+    UInt_t numCh, headerLength, interpMult;
 
     std::vector< TH1F* > hist;
 
@@ -93,7 +93,7 @@ public:
     void welcome();
     void DoGenerate();
     void DoDrawMult();
-    void UpdateDataProcessor(TString, TString, UInt_t, UInt_t);
+    void UpdateDataProcessor(TString, TString, UInt_t, UInt_t, UInt_t);
     void DoAcquisitionClosed();
     void HandleMenu(Int_t id);
     void UpdateBoardInfo();

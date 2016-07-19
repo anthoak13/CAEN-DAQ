@@ -38,16 +38,11 @@ private:
     int _offset;
     int _threshold;
     int _M;
-    //std::vector<int> d_kl;
-    //std::vector<int> _p;
     ROOT::Math::Interpolator* _inter;
 
     int* d_kl;
     int* _p;
 
-    //void setD_kl(std::vector<int>*, const int, const int);
-    //void setP(const int);
-    //int s(const int);
     void setInter(std::vector<int>*);
 
     void trapFilter(int*, const int);
@@ -56,6 +51,7 @@ private:
     void prepP(const int);
     void p(int*, const int);
     int s(int*, const int);
+    std::vector<double> nonInterpDeriv(std::vector<int>*);
 
     
 public:
@@ -86,10 +82,9 @@ public:
     int zeroAfterThreshold(std::vector<double>*, const int);
     int zeroAfterThreshold(std::vector<double>*);
 
-    std::vector<double> interpolateDeriv(std::vector<int>*, const int);
-    std::vector<double> deriv(std::vector<int>*);
+    std::vector<double> deriv(std::vector<int>*, const UInt_t multiplier = 1);
 
-    int peakFind(std::vector<int>::iterator, std::vector<int>::iterator);
+    int peakFind(std::vector<int>::iterator, std::vector<int>::iterator, Float_t peakThresh);
 
     ClassDef(SignalProcessor,0)
 };
