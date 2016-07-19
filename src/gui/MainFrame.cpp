@@ -295,6 +295,8 @@ void MainFrame::DoDraw()
     //Process the event
     dataP->processEvent(fEntryCh->GetNumber(), fEntryEvent->GetNumber());
 
+    //Delete all of the old histograms
+    for(auto&& h:hist) delete h;
     hist.clear();
     //Loop through the options and create a canvas with all of the checked boxes
     for(int i = 0; i < 5; i++)
@@ -320,22 +322,26 @@ void MainFrame::DoDraw()
 		output = dataP->getCFD();
 		hist.push_back(new TH1F("h4", "CFD", output.size(), 0, output.size()));
 		break;
+	    case 4:
+		output = dataP->getRaw();
+		hist.push_back(new TH1F("h5", "Raw", output.size(), 0, output.size()));
 	    default:
 		break;
 	    }
 	    
 
 	    //Populate the histogram
-	    if(i < 4)
+	    if(i < 5)
 	    {
 		for(int j = 0; j < output.size(); j++)
 		    hist.back()->Fill(j, output[j]);
 		
 		//Draw hist
-		hist.back()->SetLineColor(i+1);
+		hist.back()->SetLineColor((i == 4) ? 6 : i+1);
 		hist.back()->SetLineWidth(2);
 		hist.back()->Draw("hist same");
 	    }
+	    
 #ifdef DEBUG
 	    if( i == 1 )
 	    {

@@ -70,6 +70,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	return 1;
     
     //Reset all variables
+    raw.clear();
     signal.clear();
     cfd.clear();
     deriv.clear();
@@ -107,6 +108,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	sig = (sig < 0 ) ? 0 : sig;
 	signal.push_back(sig);
 	trap.push_back(sig);
+	raw.push_back(voltages[i]);
     }
 	
     deriv = signalProcessor.deriv(&signal, _interpMult);
@@ -296,11 +298,18 @@ const std::vector<int> DataProcessor::getCFD()
 	out.push_back(*it);
     return out;
 }
+const std::vector<int> DataProcessor::getRaw()
+{
+    std::vector<Int_t> out;
+    for(auto it = raw.begin(); it < raw.end(); it++)
+	out.push_back(*it);
+    return out;
+}
 
 //Private **********************************
 void DataProcessor::setHeaderLength(const UInt_t in) { _headerLength = in; }
 void DataProcessor::setNumCh(const UInt_t in) { _numCh = in; }
-void DataProcessor::setInterpMult(const UInt_t in) { _interpMult = in; }
+void DataProcessor::setInterpMult(const UInt_t in) { _interpMult = (in < 1) ? 1: in; }
 void DataProcessor::setPeakThresh(const Float_t in) { _peakThresh = in; }
 
 //Load in files

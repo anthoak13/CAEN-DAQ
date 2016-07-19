@@ -47,6 +47,7 @@ private:
     SignalProcessor signalProcessor;
 
     //Variables to be updated during processEvent
+    std::vector<UShort_t> raw;
     std::vector<int> signal;
     std::vector<double> deriv;
     std::vector<double> cfd;
@@ -100,6 +101,7 @@ public:
     const std::vector<int> getDeriv();
     const std::vector<int> getCFD();
     const std::vector<int> getTrap();
+    const std::vector<int> getRaw();
     
     ClassDef(DataProcessor, 0)
 };
