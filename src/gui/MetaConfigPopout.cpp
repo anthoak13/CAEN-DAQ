@@ -25,9 +25,7 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     fTop = new TGHorizontalFrame(fMain);
     f0 = new TGVerticalFrame(fTop);
     //Create button and selection box for top frame
-    fBAddCh = new TGTextButton(fTop, "Add Channel");
     fCBChan = new TGComboBox(f0);
-    fCBChan->AddEntry("0", 0);
     fCBChan->Resize(60, 20);
     fCBChan->Select(0);
     //Add everything to vertical frame
@@ -35,7 +33,6 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     f0->AddFrame(fCBChan, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
     //Add everything to the top frame
     fTop->AddFrame(f0, new TGLayoutHints(kLHintsNormal, 2, 10, 0, 2));
-    fTop->AddFrame(fBAddCh, new TGLayoutHints(kLHintsNormal, 2, 0, 13, 2));
 
     
     //Create Frames for the middle section
@@ -76,11 +73,8 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     
     bOk = new TGTextButton(fButtons, "&Accept");
     bOk->Connect("Clicked()", "MetaConfigPopout", this, "DoOk()");
-    bCancel = new TGTextButton(fButtons, "&Cancel");
-    bCancel->Connect("Clicked()", "MetaConfigPopout", this, "DoCancel()");
     TGLayoutHints *fLButton = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 0, 0, 2);
     fButtons->AddFrame(bOk, fLButton);
-    fButtons->AddFrame(bCancel, fLButton);
 
     fMain->AddFrame(fTop, new TGLayoutHints(kLHintsNormal, 5, 0, 0, 0));
     fMain->AddFrame(fMiddle, new TGLayoutHints(kLHintsNormal, 5, 0, 0, 0));
@@ -92,8 +86,13 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     fMain->Resize(fMain->GetDefaultWidth(), fMain->GetDefaultHeight());
     fMain->MapWindow();
     
-    fBAddCh->Connect("Clicked()", "MetaConfigPopout", this, "AddChannel()");
     fCBChan->Connect("Selected(Int_t)", "MetaConfigPopout", this, "SelectChannel(Int_t)");
+
+    _oldCh = -1;
+
+    //Load in previous meta data
+    for(int i = 0; i < dataP->getNumCh(); i++)
+	fCBChan->AddEntry(TString(std::to_string(i)), i);
 }
 
 MetaConfigPopout::~MetaConfigPopout()
@@ -103,27 +102,49 @@ MetaConfigPopout::~MetaConfigPopout()
 
 void MetaConfigPopout::CloseWindow(){ delete this; }
 
-void MetaConfigPopout::DoOk() { CloseWindow(); }
-
-void MetaConfigPopout::DoCancel() { CloseWindow(); }
-
-void MetaConfigPopout::SetupChannel(UInt_t chNum)
+void MetaConfigPopout::DoOk()
 {
-    
+    //Update old channel
+    if(_oldCh >= 0)
+    {
+	std::vector<Int_t> data;
+	data.push_back(fCBChType->GetSelected());
+	data.push_back(fNEntryMeta[0]->GetNumber());
+	data.push_back(fNEntryMeta[1]->GetNumber());
+	data.push_back(fNEntryMeta[2]->GetNumber());
+	data.push_back(fNEntryMeta[3]->GetNumber());
+	dataP->setMetaData(_oldCh, data);
+    }
+    CloseWindow();
 }
 
 void MetaConfigPopout::SelectChannel(Int_t chNum)
 {
-   
-}
+    //Update old channel
+    if(_oldCh >= 0)
+    {
+	std::vector<Int_t> data;
+	data.push_back(fCBChType->GetSelected());
+	data.push_back(fNEntryMeta[0]->GetNumber());
+	data.push_back(fNEntryMeta[1]->GetNumber());
+	data.push_back(fNEntryMeta[2]->GetNumber());
+	data.push_back(fNEntryMeta[3]->GetNumber());
+	dataP->setMetaData(_oldCh, data);
+    }
 
-void MetaConfigPopout::SaveChannel(UInt_t chNum)
-{
-    
-}
+    _oldCh = chNum;
 
-void MetaConfigPopout::AddChannel()
-{
+    //Load in values for new channel
+    std::vector<Int_t> data;
+    if(chNum < dataP->getNumCh())
+	data = dataP->getMetaData(chNum);
+    else
+	data = {0, 0, 0, 0, 0};
     
+    fCBChType->Select(data[0]);
+    fNEntryMeta[0]->SetNumber(data[1]);
+    fNEntryMeta[1]->SetNumber(data[2]);
+    fNEntryMeta[2]->SetNumber(data[3]);
+    fNEntryMeta[3]->SetNumber(data[4]);
 }
 

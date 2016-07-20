@@ -78,6 +78,8 @@ public:
 
     int processFiles(bool = false);
 
+    void setMetaData(UInt_t ch, std::vector<Int_t> data) { metaData[ch] = data; };
+    std::vector<Int_t> getMetaData(UInt_t ch) { return metaData[ch]; };
     UInt_t getNumEvents();
     UInt_t getMaxEvents();
     UInt_t getEventLength();

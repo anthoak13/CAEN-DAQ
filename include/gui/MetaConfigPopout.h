@@ -26,12 +26,11 @@ private:
     //Add Channel
     TGHorizontalFrame *fTop, *fMiddle, *fButtons;
     TGVerticalFrame *f0, *fLabel, *fRight;
-    TGTextButton *fBAddCh;
-    TGNumberEntryField *fNEntryMeta[5];
+    TGNumberEntryField *fNEntryMeta[4];
     TGComboBox *fCBChan, *fCBChType;
     
-    TGTextButton *bOk, *bCancel;
-    UInt_t oldCh;
+    TGTextButton *bOk;
+    Int_t _oldCh;
     DataProcessor *dataP;
     
 #ifndef __CINT__
@@ -42,18 +41,13 @@ private:
     "Signal start",
     "Signal end" };
 #endif
-
-    void SetupChannel(UInt_t);
-    void SaveChannel(UInt_t);
     
 public:
     MetaConfigPopout(const TGWindow *p, const TGWindow *main,  DataProcessor *dataPIn);
     virtual ~MetaConfigPopout();
     void CloseWindow();
     void DoOk();
-    void DoCancel();
     void SelectChannel(Int_t);
-    void AddChannel();
 
 };
 #endif

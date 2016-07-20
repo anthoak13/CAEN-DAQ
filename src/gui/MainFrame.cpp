@@ -480,6 +480,7 @@ void MainFrame::HandleMenu(Int_t id)
 	closeWindow();
 	break;
     case M_FILE_META:
+	std::cout << " Opening meta window" << std::endl;
 	new MetaConfigPopout(gClient->GetRoot(), fMain, dataP);
 	break;
     case M_ACQ_START:
