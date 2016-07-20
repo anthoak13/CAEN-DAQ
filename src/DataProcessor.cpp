@@ -110,24 +110,27 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	trap.push_back(sig);
 	raw.push_back(voltages[i]);
     }
-	
+
+    //Get the derivative and perform cfd
     deriv = signalProcessor.deriv(&signal, _interpMult);
     cfd = deriv;
     signalProcessor.CFD(&cfd);
 
-    //Variables
+    //Find zero and make sure it's valid
     _zero = signalProcessor.zeroAfterThreshold(&cfd)/_interpMult;
-    
-    //correct zero
     if(_zero + (metaData[f][4]-metaData[f][3]) > trap.size())
 	_zero = metaData[f][3];
 
+    //Apply trapazoid filter and peakfind
     signalProcessor.trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
     _Q = signalProcessor.peakFind(trap.begin() + _zero, trap.begin() + _zero +
 				  metaData[f][4] - metaData[f][3], _peakThresh);
     
+    //Do old QDC method
     _QDC = signalProcessor.QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
-    _timestamp = header[5];//TODO
+
+    //Get the timestamp
+    _timestamp = header[5];
 
 #ifdef DEBUG
     if(_Q < 0)
@@ -140,12 +143,12 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     return 0;
 
 }
+
 //return 0: sucess
 //return 1: trees wrong size
-
 int DataProcessor::processFiles(bool verbose)
 {
-    //Variables to store
+    //Variables to store channel data
     Float_t Q[_numCh];
     Float_t QDC[_numCh];
     Float_t zero[_numCh];
@@ -209,18 +212,20 @@ int DataProcessor::processFiles(bool verbose)
 	{
 	    if(verbose && event%50000 == 0)
 		std::cout << "Processing event: " << event << std::endl;
+#ifdef DEBUG
 	    bench->Start("Process");
 	    processEvent(f, event);
 	    bench->Stop("Process");
+#endif
+#ifndef DEBUG
+	    processEvent(f, event);
+#endif
+	    //Populate arrrays with calculated values
 	    baseline[f] = _baseline;
 	    zero[f] = _zero;
-
 	    Q[f] = _Q;
 	    QDC[f] = _QDC;
 	    timestamp[f] = _timestamp;
-
-	    //if(verbose && _Q > 570000 && _Q < 580000)
-	    //std::cout << _Q << "  " << _zero << "   " << event << std::endl;
 
 	    //Fill the tree
 	    tmacro_tree[f]->Fill();
@@ -239,7 +244,7 @@ int DataProcessor::processFiles(bool verbose)
 	return 1;
 
     if(verbose)
-	std::cout << "Combining and writing tree..." << std::endl;
+	std::cout << "Combining trees..." << std::endl;
     
     //Trees are the same size so merge
     for( int i = 0; i < treeSize; i++ )
@@ -249,6 +254,9 @@ int DataProcessor::processFiles(bool verbose)
 
 	macro_tree->Fill();
     }
+
+    if(verbose)
+	std::cout << "Writing tree..." << std::endl;
 
     //Write the tree to a root file
     rootFile->cd();
@@ -263,8 +271,6 @@ int DataProcessor::processFiles(bool verbose)
     bench->Summary(a,b);
     std::cout << "skipped " << _badEvents << " bad events." << std::endl;
 #endif
-    //merge trees
-    //delete temp trees
     return 0;
 }
 
@@ -370,7 +376,8 @@ void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize)
     //rewind 2 bytes to get file pointing to the begininning of header
     fseek(file, -4, SEEK_CUR);
 }
-    
+
+//TODO: read from file "meta"
 void DataProcessor::setMetaData(TString meta, UInt_t numFiles)
 {
     for(UInt_t i = 0; i < numFiles; i++)

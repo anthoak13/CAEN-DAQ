@@ -75,6 +75,7 @@ private:
 
     M_FILE_OPEN,
     M_FILE_LINK,
+    M_FILE_META,
     M_FILE_EXIT,
 
     M_SPECTRA_CALIB

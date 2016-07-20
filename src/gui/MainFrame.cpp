@@ -17,6 +17,7 @@
 #include "WaveConfigPopout.h"
 #include "WavedumpConfig.h"
 #include "ECalibrationPopout.h"
+#include "MetaConfigPopout.h"
 #include "../SignalProcessor.h"
 #include "../DataProcessor.h"
 #include "../Digitizer.h"
@@ -44,6 +45,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fMenuFile = new TGPopupMenu(gClient->GetRoot());
     fMenuFile->AddEntry("&Open...", M_FILE_OPEN);
     fMenuFile->AddEntry("&Relink", M_FILE_LINK);
+    fMenuFile->AddEntry("&Meta Config...", M_FILE_META);
     fMenuFile->AddSeparator();
     fMenuFile->AddEntry("&Exit", M_FILE_EXIT);
 
@@ -184,7 +186,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     //Create display drop menu
     fLabelDisp = new TGLabel(f13, "Display");
     fComboDisp = new TGComboBox(f13);
-    fComboDisp->AddEntry("Q", 0);
+    fComboDisp->AddEntry("ADC", 0);
     fComboDisp->AddEntry("Zero", 1);
     fComboDisp->AddEntry("Baseline", 2);
     fComboDisp->AddEntry("QCD", 3);
@@ -466,7 +468,6 @@ void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t num
 
 void MainFrame::HandleMenu(Int_t id)
 {
-    std::cout << id << std::endl;
     switch(id) {
     case M_FILE_OPEN:
 	std::cout << " Opening DAQ window" << std::endl;
@@ -477,6 +478,9 @@ void MainFrame::HandleMenu(Int_t id)
 	break;
     case M_FILE_EXIT:
 	closeWindow();
+	break;
+    case M_FILE_META:
+	new MetaConfigPopout(gClient->GetRoot(), fMain, dataP);
 	break;
     case M_ACQ_START:
 	gROOT->ProcessLine(".! gnome-terminal -x wavedump WaveDumpConfig.txt");
@@ -500,7 +504,7 @@ void MainFrame::UpdateBoardInfo()
 	boardText =  ("Error: " + getCAENError(error) );
     else
 	boardText = TString("Model name: ").Append(info.ModelName).Append(
-	    " Serial number: ").Append(info.SerialNumber);
+	    "  Serial number: ").Append(std::to_string(info.SerialNumber));
 
     fStatusBar->SetText(boardText, 1);
 }
