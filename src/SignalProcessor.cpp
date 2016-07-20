@@ -21,8 +21,20 @@
 
 ClassImp(SignalProcessor);
 //Constructor
-SignalProcessor::SignalProcessor()
+SignalProcessor::SignalProcessor(const UInt_t riseTime,   const UInt_t M,
+		    const Double_t flatMult, const Double_t peakThreshold,
+		    const UInt_t zeroOffset, const Int_t zeroThreshold,
+		    const UInt_t interpMult, const Double_t scalingMult)
 {
+    _decayTime = riseTime;
+    _M = M;
+    _flatMultiplier = flatMult;
+    _peakThreshold = peakThreshold;
+    _offset = zeroOffset;
+    _scaling = scalingMult;
+    _threshold = zeroThreshold;
+    _interpMult = interpMult;
+
     _inter = NULL;
     d_kl = new int[10];
     _p = new int[10];
@@ -36,13 +48,6 @@ SignalProcessor::~SignalProcessor()
 }
 
 //Public Functions
-void SignalProcessor::setDecayTime(const int in) { _decayTime = in; setM(in); }
-void SignalProcessor::setFlatMult(const double in) { _flatMultiplier = in;}
-void SignalProcessor::setM(const double in) { _M = in;}
-void SignalProcessor::setOffset(const int in) { _offset = in;}
-void SignalProcessor::setScaling(const double in) { _scaling = in;}
-void SignalProcessor::setThreshold(const int in) { _threshold = in;}
-
 Int_t  SignalProcessor::getDecayTime() { return _decayTime;}
 Double_t SignalProcessor::getFlatMult() { return _flatMultiplier;}
 Double_t SignalProcessor::getM() {return  _M;}
@@ -135,12 +140,12 @@ int SignalProcessor::zeroAfterThreshold(std::vector<double>* signal, const int t
     if(it == signal->end())
 	return 0;
     
-    return std::distance(signal->begin(), it);
+    return std::distance(signal->begin(), it)/_interpMult;
 }
 
-std::vector<double> SignalProcessor::deriv(std::vector<int>* signal, const UInt_t multiplier)
+std::vector<double> SignalProcessor::deriv(std::vector<int>* signal)
 {
-    if(multiplier < 2)
+    if(_interpMult < 2)
 	return nonInterpDeriv(signal);
 
     
@@ -148,7 +153,7 @@ std::vector<double> SignalProcessor::deriv(std::vector<int>* signal, const UInt_
     std::vector<double> out;
 
     //calculate the stepsize
-    double stepSize = 1.0 /(double)multiplier;
+    double stepSize = 1.0 /_interpMult;
 
     for(double i = 0; i < signal->size() - 1; i += stepSize)
     {
@@ -170,9 +175,9 @@ std::vector<double> SignalProcessor::nonInterpDeriv(std::vector<int>* signal)
 //Uses the change in derivative at the beginning and end of the flat top to
 //find the peak value. If the derivative doesn't change as expected, ie it is exeptionally
 //smooth, it returns a simple maximum of the trapazoid
-int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>::iterator end, Float_t peakThresh)
+int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>::iterator end)
 {
-    const double thresh = peakThresh;
+    const double thresh = _peakThreshold;
     std::vector<int>::iterator peak1;
     std::vector<int>::iterator mid;
     std::vector<int>::iterator peak2;

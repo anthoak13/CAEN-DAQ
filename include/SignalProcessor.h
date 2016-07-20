@@ -38,6 +38,8 @@ private:
     int _offset;
     int _threshold;
     int _M;
+    Double_t _peakThreshold;
+    UInt_t _interpMult;
     ROOT::Math::Interpolator* _inter;
 
     int* d_kl;
@@ -55,15 +57,11 @@ private:
 
     
 public:
-    SignalProcessor();
+    SignalProcessor(const UInt_t riseTime=12,   const UInt_t M=12,
+		    const Double_t flatMult=2.0/3.0, const Double_t peakThreshold=0.1,
+		    const UInt_t zeroOffset=6, const Int_t zeroThreshold=-20,
+		    const UInt_t interpMult=1, const Double_t scalingMult=0.8);
     ~SignalProcessor();
-
-    void setDecayTime(const int);
-    void setFlatMult(const double);
-    void setM(const double);
-    void setOffset(const int);
-    void setScaling(const double);
-    void setThreshold(const int);
     
     Int_t getDecayTime();
     Double_t getFlatMult();
@@ -71,6 +69,8 @@ public:
     Int_t getOffset();
     Double_t getScaling();
     Int_t getThreshold();
+    UInt_t getInterpMult() { return _interpMult;}
+    Double_t getPeakThreshold() { return _peakThreshold;}
 
     void trapFilter(std::vector<int> *signal, const int start, const int length);
     Float_t QDC(std::vector<int> *signal, const int start, const int length);
@@ -79,12 +79,12 @@ public:
     void CFD(std::vector<double>*, const int);
     void CFD(std::vector<double>*);
     
-    int zeroAfterThreshold(std::vector<double>*, const int);
-    int zeroAfterThreshold(std::vector<double>*);
+    int zeroAfterThreshold(std::vector<double> *signal, const int);
+    int zeroAfterThreshold(std::vector<double> *signal);
 
-    std::vector<double> deriv(std::vector<int>*, const UInt_t multiplier = 1);
+    std::vector<double> deriv(std::vector<int> *signal);
 
-    int peakFind(std::vector<int>::iterator, std::vector<int>::iterator, Float_t peakThresh);
+    int peakFind(std::vector<int>::iterator, std::vector<int>::iterator);
 
     ClassDef(SignalProcessor,0)
 };

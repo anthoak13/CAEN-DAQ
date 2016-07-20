@@ -27,7 +27,6 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     //Create button and selection box for top frame
     fCBChan = new TGComboBox(f0);
     fCBChan->Resize(60, 20);
-    fCBChan->Select(0);
     //Add everything to vertical frame
     f0->AddFrame(new TGLabel(f0, "Channel"), new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
     f0->AddFrame(fCBChan, new TGLayoutHints(kLHintsNormal, 0, 0, 0, 0));
@@ -93,6 +92,9 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     //Load in previous meta data
     for(int i = 0; i < dataP->getNumCh(); i++)
 	fCBChan->AddEntry(TString(std::to_string(i)), i);
+
+    
+    fCBChan->Select(0);
 }
 
 MetaConfigPopout::~MetaConfigPopout()
@@ -147,4 +149,3 @@ void MetaConfigPopout::SelectChannel(Int_t chNum)
     fNEntryMeta[2]->SetNumber(data[3]);
     fNEntryMeta[3]->SetNumber(data[4]);
 }
-

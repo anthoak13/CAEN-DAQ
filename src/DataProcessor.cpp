@@ -21,31 +21,27 @@ ClassImp(DataProcessor);
 
 DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t numFiles, const UInt_t headerLength, const UInt_t interpMult)
 {
+    //Create a new signalProcessor with the default values
+    signalProcessor = new SignalProcessor();
+    
+    //Check if a dummy class should be created
     if(numFiles == 0)
 	return;
-    //set any variables
+    
+    //set variables
     setHeaderLength(headerLength);
-    setInterpMult(interpMult);
     setNumCh(numFiles);
-
-    //set the metaData
-    _meta = meta;
-    loadMetaData(numFiles);
     
     //load files
     if(!loadFiles(fileTemplate, numFiles))
 	throw std::runtime_error("Can't open files");
 
+    //set the metaData
+    _meta = meta;
+    loadMetaData(numFiles);
+
     //populate event map
     populateEventMap();
-
-    //set signalProcessor up
-    signalProcessor.setDecayTime(12);
-    signalProcessor.setFlatMult(2.0/3.0);
-    signalProcessor.setOffset(6);
-    signalProcessor.setScaling(0.8);
-    signalProcessor.setThreshold(-17);
-    setPeakThresh(0.10);
 
 #ifdef DEBUG
     bench = new TBenchmark();
@@ -63,6 +59,8 @@ DataProcessor::~DataProcessor()
     }
 #endif
     writeMetaData();
+
+    delete signalProcessor;
 }
 //return 1: event too large
 //return 0: success 
@@ -107,44 +105,46 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
        	    sig = _baseline - voltages[i];
 	else
 	    sig = voltages[i] - _baseline;
-	
+
+	//Ensure signal is NonNegative
 	sig = (sig < 0 ) ? 0 : sig;
+
+	//Push back signal
 	signal.push_back(sig);
 	trap.push_back(sig);
 	raw.push_back(voltages[i]);
     }
 
     //Get the derivative and perform cfd
-    deriv = signalProcessor.deriv(&signal, _interpMult);
+    deriv = signalProcessor->deriv(&signal);
     cfd = deriv;
-    signalProcessor.CFD(&cfd);
+    signalProcessor->CFD(&cfd);
 
     //Find zero and make sure it's valid
-    _zero = signalProcessor.zeroAfterThreshold(&cfd)/_interpMult;
-    if(_zero + (metaData[f][4]-metaData[f][3]) > trap.size())
+    _zero = signalProcessor->zeroAfterThreshold(&cfd);
+    if( ( _zero + metaData[f][4]-metaData[f][3] ) > trap.size())
 	_zero = metaData[f][3];
 
     //Apply trapazoid filter and peakfind
-    signalProcessor.trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
-    _Q = signalProcessor.peakFind(trap.begin() + _zero, trap.begin() + _zero +
-				  metaData[f][4] - metaData[f][3], _peakThresh);
+    signalProcessor->trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
+    _Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
+				  metaData[f][4] - metaData[f][3]);
     
     //Do old QDC method
-    _QDC = signalProcessor.QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
+    _QDC = signalProcessor->QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
 
     //Get the timestamp
     _timestamp = header[5];
 
-#ifdef DEBUG
+
     if(_Q < 0)
     {
+#ifdef DEBUG
 	std::cout << "Failed event at: " << event << std::endl;
+#endif
 	_badEvents++;
     }
-#endif
-    
     return 0;
-
 }
 
 //return 0: sucess
@@ -170,7 +170,7 @@ int DataProcessor::processFiles(bool verbose)
 	//Create temp trees
 	tmacro_tree[i] = new TTree(Form("tmacro_tree_ch%i", i), "tmacro_tree");
 
-	//Fill the tree
+	//Initialize the trees
 	tmacro_tree[i]->Branch(Form("Q_%i", i), &Q[i], Form("Q_%i/F", i));
 	macro_tree->Branch(Form("Q_%i", i), &Q[i], Form("Q_%i/F", i));
 
@@ -223,6 +223,7 @@ int DataProcessor::processFiles(bool verbose)
 #ifndef DEBUG
 	    processEvent(f, event);
 #endif
+	    
 	    //Populate arrrays with calculated values
 	    baseline[f] = _baseline;
 	    zero[f] = _zero;
@@ -242,7 +243,7 @@ int DataProcessor::processFiles(bool verbose)
     for (int i = 1; i < _numCh && sameSize; i++)
 	sameSize &= (tmacro_tree[i]->GetEntries() == treeSize);
 
-    //If the trees are differnt sizes quit
+    //If the trees are differnt sizes return an error
     if(!sameSize)
 	return 1;
 
@@ -272,8 +273,10 @@ int DataProcessor::processFiles(bool verbose)
 #ifdef DEBUG
     Float_t a,b;
     bench->Summary(a,b);
-    std::cout << "skipped " << _badEvents << " bad events." << std::endl;
 #endif
+    if(verbose)
+	std::cout << "skipped " << _badEvents << " bad events." << std::endl;
+
     return 0;
 }
 
@@ -288,22 +291,20 @@ Float_t DataProcessor::getQ() { return _Q; }
 Float_t DataProcessor::getZero() { return _zero; }
 Float_t DataProcessor::getBaseline() { return _baseline; }
 UInt_t DataProcessor::getBadEvents() { return _badEvents; }
-Float_t DataProcessor::getPeakThresh() { return _peakThresh; }
-UInt_t DataProcessor::getInterpMult() { return _interpMult; }
-SignalProcessor* DataProcessor::getSignalP() { return &signalProcessor; }
+SignalProcessor* DataProcessor::getSignalP() { return signalProcessor; }
 const std::vector<int> DataProcessor::getSignal() { return signal; }
 const std::vector<int> DataProcessor::getTrap() { return trap; }
 const std::vector<int> DataProcessor::getDeriv()
 {
     std::vector<Int_t> out;
-    for(std::vector<double>::iterator it = deriv.begin(); it < deriv.end(); it+= _interpMult)
+    for(std::vector<double>::iterator it = deriv.begin(); it < deriv.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
 const std::vector<int> DataProcessor::getCFD()
 {
     std::vector<Int_t> out;
-    for(std::vector<double>::iterator it = cfd.begin(); it < cfd.end(); it+= _interpMult)
+    for(std::vector<double>::iterator it = cfd.begin(); it < cfd.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
@@ -318,8 +319,6 @@ const std::vector<int> DataProcessor::getRaw()
 //Private **********************************
 void DataProcessor::setHeaderLength(const UInt_t in) { _headerLength = in; }
 void DataProcessor::setNumCh(const UInt_t in) { _numCh = in; }
-void DataProcessor::setInterpMult(const UInt_t in) { _interpMult = (in < 1) ? 1: in; }
-void DataProcessor::setPeakThresh(const Float_t in) { _peakThresh = in; }
 
 //Load in files
 bool DataProcessor::loadFiles(TString fileTemplate, const UInt_t numFiles)
@@ -337,7 +336,7 @@ bool DataProcessor::loadFiles(TString fileTemplate, const UInt_t numFiles)
 //Populate event map and set number of samples in an event
 void DataProcessor::populateEventMap()
 {
-    //Get the max number of events
+    //Get the max number of events and event length
     UInt_t maxEvents, fileSize, eventSize;
     rewind(files[0]);
     fread(&eventSize, 4, 1, files[1]);
@@ -350,7 +349,7 @@ void DataProcessor::populateEventMap()
 
     rewind(files[0]);
     
-    //Look though 1st file for each event
+    //Look though 1st file and create mapping of events
     UInt_t event = 0;
     while(ftell(files[0]) + eventSize < fileSize)
     {
@@ -376,6 +375,7 @@ void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize)
 	prevBytes = bytes;
 	fread(&bytes, 2, 1, file);
     }
+    
     //rewind 2 bytes to get file pointing to the begininning of header
     fseek(file, -4, SEEK_CUR);
 }
@@ -383,12 +383,16 @@ void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize)
 
 void DataProcessor::loadMetaData(UInt_t numFiles)
 {
+    //CLear out the old meta data
     metaData.clear();
+
+    
     //Load file
     std::ifstream file;
     file.open(_meta);
     if(file.is_open())
     {
+    //If the file exists read its content 
     while(!file.eof())
     {
 	TString temp;
@@ -414,10 +418,12 @@ void DataProcessor::loadMetaData(UInt_t numFiles)
     file.close();
     }
 
+    //Fill in the meta data for the rest of the channels with
+    //default values
     for(UInt_t i = metaData.size(); i < numFiles; i++)
     {
 	std::vector<Int_t> temp;
-	temp.push_back( ( i == 0 ) ? 1 : 0);
+	temp.push_back(0);
 	temp.push_back(0);
 	temp.push_back(30);
 	temp.push_back(35);

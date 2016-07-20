@@ -26,10 +26,10 @@
 #include <exception>
 #include <iostream>
 #endif
-#include "SignalProcessor.h"
 
 //Forward Declerations
 class TBenchmark;
+class SignalProcessor;
 
 //Class def
 class DataProcessor : public TObject
@@ -41,10 +41,8 @@ private:
     UInt_t _max;
     UInt_t _eventLength;
     UInt_t _headerLength;
-    UInt_t _interpMult;
-    Float_t _peakThresh;
     UInt_t _numCh;
-    SignalProcessor signalProcessor;
+    SignalProcessor *signalProcessor;
 
     //Variables to be updated during processEvent
     std::vector<UShort_t> raw;
@@ -94,12 +92,6 @@ public:
     Float_t getBaseline();
     Float_t getQDC();
     UInt_t getBadEvents();
-    Float_t getPeakThresh();
-    UInt_t getInterpMult();
-
-    
-    void setPeakThresh(const Float_t);
-    void setInterpMult(const UInt_t);
     
     const std::vector<int> getSignal();
     const std::vector<int> getDeriv();

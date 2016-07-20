@@ -28,9 +28,7 @@ private:
     TGHorizontalFrame *fNumTrap[4], *fNumZero[4];
     TGNumberEntry *fEntryTrap[4], *fEntryZero[4];
     SignalProcessor *signalP;
-    DataProcessor *dataP;
-    
-    
+
 #ifndef __CINT__
     const char *fLabel[8] = {
     "Rise time",

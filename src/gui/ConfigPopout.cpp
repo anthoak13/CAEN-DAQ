@@ -12,13 +12,13 @@
 
 #include "ConfigPopout.h"
 #include "../DataProcessor.h"
+#include "../SignalProcessor.h"
 #include <iostream>
 
 
 //ConfigPopout implementaion********************
-ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcessor *datP)
+ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcessor *dataP)
 {
-    dataP = datP;
     signalP = dataP->getSignalP();
     //create main framw
     fMain = new TGTransientFrame(p, main, 10, 10, kVerticalFrame);
@@ -78,8 +78,8 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcesso
 	        default2 = signalP->getThreshold();
 		break;
 	case 3:
-	    default1 = dataP->getPeakThresh();
-	    default2 = dataP->getInterpMult();
+	    default1 = signalP->getPeakThreshold();
+	    default2 = signalP->getInterpMult();
 	    break;
 	}
 	fEntryTrap[i] = new TGNumberEntry(fNumTrap[i], default1);
@@ -111,16 +111,12 @@ void ConfigPopout::DoOk()
 {
     std::cout << "Saving changes to config" << std::endl;
     
-    //update shit
-    signalP->setDecayTime(fEntryTrap[0]->GetNumber());
-    signalP->setFlatMult(fEntryTrap[1]->GetNumber());
-    signalP->setM(fEntryTrap[2]->GetNumber());
-    signalP->setOffset(fEntryZero[0]->GetNumber());
-    signalP->setScaling(fEntryZero[1]->GetNumber());
-    signalP->setThreshold(fEntryZero[2]->GetNumber());
-
-    dataP->setPeakThresh(fEntryTrap[3]->GetNumber());
-    dataP->setInterpMult(fEntryZero[3]->GetNumber());
+    //update signal processor with new info
+    delete signalP;
+    signalP = new SignalProcessor(fEntryTrap[0]->GetNumber(), fEntryTrap[2]->GetNumber(),
+				  fEntryTrap[1]->GetNumber(), fEntryTrap[3]->GetNumber(),
+				  fEntryZero[0]->GetNumber(), fEntryZero[2]->GetNumber(),
+				  fEntryZero[3]->GetNumber(), fEntryZero[1]->GetNumber());
 
     std::cout << "Updated config" << std::endl;
     CloseWindow();
