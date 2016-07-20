@@ -14,6 +14,7 @@
 //Adam Anthony 6/30/16
 
 #include "DataProcessor.h"
+#include "SignalProcessor.h"
 #include "TBenchmark.h"
 
 ClassImp(DataProcessor);
@@ -28,7 +29,8 @@ DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t nu
     setNumCh(numFiles);
 
     //set the metaData
-    setMetaData(meta, numFiles);
+    _meta = meta;
+    loadMetaData(numFiles);
     
     //load files
     if(!loadFiles(fileTemplate, numFiles))
@@ -60,6 +62,7 @@ DataProcessor::~DataProcessor()
 	delete bench;
     }
 #endif
+    writeMetaData();
 }
 //return 1: event too large
 //return 0: success 
@@ -377,10 +380,40 @@ void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize)
     fseek(file, -4, SEEK_CUR);
 }
 
-//TODO: read from file "meta"
-void DataProcessor::setMetaData(TString meta, UInt_t numFiles)
+
+void DataProcessor::loadMetaData(UInt_t numFiles)
 {
-    for(UInt_t i = 0; i < numFiles; i++)
+    //Load file
+    std::ifstream file;
+    file.open(_meta);
+    if(!file.is_open())
+	return;
+    
+    while(!file.eof())
+    {
+	TString temp;
+	temp.ReadToken(file);
+	
+	//If the line should be skipped
+	if(temp.Contains("#"))
+	{
+	    temp.ReadLine(file);
+	    continue;
+	}
+
+	//get the meta data
+	std::vector<Int_t> tempVec;
+	for(int i = 0; i < 5; i++)
+	{
+	    temp.ReadToken(file);
+	    tempVec.push_back(temp.Atoi());
+	}
+	metaData.push_back(tempVec);
+    }
+
+    file.close();
+
+    for(UInt_t i = metaData.size(); i < numFiles; i++)
     {
 	std::vector<Int_t> temp;
 	temp.push_back( ( i == 0 ) ? 1 : 0);
@@ -391,3 +424,28 @@ void DataProcessor::setMetaData(TString meta, UInt_t numFiles)
 	metaData.push_back(temp);
     }
 }
+
+void DataProcessor::writeMetaData()
+{
+#ifdef DEBUG
+    std::cout << "Writing meta: " << _meta << std::endl;
+#endif
+    std::ofstream file;
+    file.open(_meta);
+
+    if(!file.is_open())
+	return;
+
+    //Print header for file
+    file << "# Ch Type BaselineStart BaselineEnd SigStart SigEnd" << std::endl;
+    for(int i = 0; i < metaData.size(); i++)
+    {
+	file << i;
+	for(auto&& num:metaData[i])
+	    file << " " << num;
+	file <<std::endl;
+    }
+
+    file.close();
+}
+				 

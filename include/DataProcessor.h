@@ -58,6 +58,7 @@ private:
     Float_t _Q;
     Float_t _QDC;
     UInt_t _badEvents;
+    TString _meta;
 
     TBenchmark *bench;
     
@@ -67,7 +68,8 @@ private:
     void nextEvent(FILE*, const UInt_t);
 
     void setHeaderLength(const UInt_t);
-    void setMetaData(TString, UInt_t);
+    void loadMetaData(UInt_t);
+    void writeMetaData();
     void setNumCh(const UInt_t);
 
 public:

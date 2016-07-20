@@ -265,6 +265,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
 
 MainFrame::~MainFrame()
 {
+    std::cout << "Destroying Main" << std::endl;
     fMain->Cleanup();
     delete dataP;
     delete fMain;
@@ -274,6 +275,7 @@ void MainFrame::closeWindow()
 {
     std::cout << "Closing GUI" << std::endl;
     std::cout << "Event num: " << fEntryEvent->GetNumber() << std::endl;
+    delete this;
     gApplication->Terminate();
 }
 

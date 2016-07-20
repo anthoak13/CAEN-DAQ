@@ -34,14 +34,7 @@ int main(int argc, char **argv)
    gui();
 
    theApp.Run();
-   /*
-    WavedumpConfig config;
-    ChannelConfig chan = config.getChan(5);
-    std::cout << chan.getEnabled() << std::endl;
-    ChannelConfig chan2(false, 0, 0, (ChannelTrigger)0);
-    config.addChannel(5, chan2);
-    chan = config.getChan(5);
-    std::cout << chan.getEnabled() << std::endl;*/
+
    return 0;
 }
 #endif
