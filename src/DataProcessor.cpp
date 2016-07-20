@@ -383,12 +383,12 @@ void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize)
 
 void DataProcessor::loadMetaData(UInt_t numFiles)
 {
+    metaData.clear();
     //Load file
     std::ifstream file;
     file.open(_meta);
-    if(!file.is_open())
-	return;
-    
+    if(file.is_open())
+    {
     while(!file.eof())
     {
 	TString temp;
@@ -412,6 +412,7 @@ void DataProcessor::loadMetaData(UInt_t numFiles)
     }
 
     file.close();
+    }
 
     for(UInt_t i = metaData.size(); i < numFiles; i++)
     {

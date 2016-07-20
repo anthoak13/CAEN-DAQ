@@ -29,7 +29,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     
     //Create data processor
     inputTemplate = "data_in%i";
-    meta = "";
+    meta = "meta.config";
     numCh = 16;
     headerLength = 6;
     dataP = new DataProcessor("", "", 0, 0, 0);

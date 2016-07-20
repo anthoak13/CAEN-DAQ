@@ -12,3 +12,5 @@ WaveDumpConfig.txt
 Header*
 *.sh
 !run.sh
+meta.config
+*.zip
