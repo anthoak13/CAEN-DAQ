@@ -296,7 +296,7 @@ void SignalProcessor::setD_kl(int* signal, const int length)
 void SignalProcessor::p(int* signal, const int n)
 {
     prepP(n);
-    setP(signal, n);
+    setP(signal, n-1);
 }
 
 int SignalProcessor::setP(int* signal, const int n)
