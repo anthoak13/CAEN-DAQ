@@ -14,9 +14,7 @@
 #include "ECalibrationPopout.h"
 #include "MainFrame.h"
 #include <iostream>
-
-std::vector<Double_t> ECalibrationPopout::raw = {0,1};
-std::vector<Double_t> ECalibrationPopout::calibrated = {0, 1};
+#include <fstream>
 
 ECalibrationPopout::ECalibrationPopout(const TGWindow *p, const TGWindow *w, MainFrame *main)
 {
@@ -25,6 +23,9 @@ ECalibrationPopout::ECalibrationPopout(const TGWindow *p, const TGWindow *w, Mai
     fMain->Connect("CloseWindow()", "DAQPopout", this, "CloseWindow()");
     fMain->DontCallClose();
 
+    //Load in old calibration
+    loadFile();
+    
     TGLayoutHints *fLHintLabel = new TGLayoutHints(kLHintsNormal, 2, 65, 2, 2);
     TGLayoutHints *fLHintEntry = new TGLayoutHints(kLHintsNormal, 2, 3, 2, 2);
 
@@ -59,6 +60,7 @@ ECalibrationPopout::ECalibrationPopout(const TGWindow *p, const TGWindow *w, Mai
     fMain->AddFrame(fFrameButtons, new TGLayoutHints(kLHintsTop |
 						     kLHintsRight, 2, 2, 2, 2));
 
+
     //Resize ect
     fMain->SetWindowName("Calibration");
     fMain->MapSubwindows();
@@ -68,6 +70,7 @@ ECalibrationPopout::ECalibrationPopout(const TGWindow *p, const TGWindow *w, Mai
 
 ECalibrationPopout::~ECalibrationPopout()
 {
+    writeFile();
     fMain->DeleteWindow();
 }
 
@@ -83,7 +86,62 @@ void ECalibrationPopout::DoOk()
 
     mainFrame->slope = (calibrated[0] - calibrated[1])/(raw[0]-raw[1]);
     mainFrame->intercept = calibrated[1] - raw[1] * mainFrame->slope;
+    writeFile();
+    
     CloseWindow();
 }
 
 void ECalibrationPopout::DoCancel() { CloseWindow(); }
+
+void ECalibrationPopout::loadFile()
+{
+    //Load file
+    std::ifstream file;
+    file.open("calibration.config");
+    if(file.is_open())
+    {
+	//If the file exists read its content
+	int i = 0;
+	while(!file.eof() && i < 2)
+	{
+	    TString temp;
+	    temp.ReadToken(file);
+	    
+	    //If the line should be skipped
+	    if(temp.Contains("#"))
+	    {
+		temp.ReadLine(file);
+		continue;
+	    }
+	    
+	    //get the calibration
+	    raw.push_back(temp.Atoi());
+	    temp.ReadToken(file);
+	    calibrated.push_back(temp.Atoi());
+	    i++;
+	}
+	
+	file.close();
+    }
+}
+
+void ECalibrationPopout::writeFile()
+{
+#ifdef DEBUG
+    std::cout << "Writing calibration" << std::endl;
+#endif
+    std::ofstream file;
+    file.open("calibration.config");
+
+    if(!file.is_open())
+	return;
+
+    //Print header for file
+    file << "# raw calibrated" << std::endl;
+    for(int i = 0; i < 2; i++)
+    {
+	file << raw[i] << " " << calibrated[i] << std::endl;
+    }
+
+    file.close();
+}

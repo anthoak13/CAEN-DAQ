@@ -28,8 +28,11 @@ private:
     TGTextButton *fBOk, *fBCancel;
     TGNumberEntryField *fNEntryRaw[2], *fNEntryCalibrated[2];
     MainFrame *mainFrame;
-    static std::vector<Double_t> raw;
-    static std::vector<Double_t> calibrated;
+    std::vector<Double_t> raw;
+    std::vector<Double_t> calibrated;
+
+    void loadFile();
+    void writeFile();
     
 public:
     ECalibrationPopout(const TGWindow*, const TGWindow*,  MainFrame*);

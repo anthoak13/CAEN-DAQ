@@ -409,7 +409,7 @@ void MainFrame::DoDrawMult()
     for(int i = 0; i < numEntries; i++)
     {
 	tree->GetEntry(i);
-	if(fComboDisp->GetSelected() == 0)
+	if(fComboDisp->GetSelected() == 0 || fComboDisp->GetSelected() == 3)
 	    h1->Fill(temp*slope + intercept);
 	else
 	    h1->Fill(temp);
