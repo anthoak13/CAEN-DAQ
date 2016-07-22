@@ -11,7 +11,7 @@
 *.zip
 *.rootmap
 
-
+test.C
 data_in*
 WaveDumpConfig.txt
 Header*

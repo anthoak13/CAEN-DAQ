@@ -9,10 +9,6 @@
 //     http://www.gnu.org/licenses.                                          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-
-//File for gui, macro should be interpreted
-//Adam Anthony 
-
 #include "MainFrame.h"
 
 void gui()
@@ -21,7 +17,7 @@ void gui()
 }
 
 //Main Program *****************
-#ifdef stand
+#ifdef STANDALONE
 int main(int argc, char **argv)
 {
     TApplication theApp("App", &argc, argv);

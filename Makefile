@@ -38,10 +38,16 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 SRCS += $(wildcard $(SRCDIR)/gui/*.cpp)
 TMP = $(patsubst %.cpp,%.o,$(SRCS))
 OBJS = $(subst $(SRCDIR),$(BUILDDIR),$(TMP))
-#GUISRC = $(wildcard *.C)
+
+#Gui source and object
 GUISRC = gui.C
 TMP4 = $(patsubst %.C,%.o,$(GUISRC))
 GUIO = $(addprefix $(BUILDDIR)/, $(TMP4))
+
+#Test source and object
+TESTSRC = test.C
+TMP5 = $(patsubst %.C,%.o,$(TESTSRC))
+TESTO = $(addprefix $(BUILDDIR)/, $(TMP5))
 
 
 #Get info for dictionary generation
@@ -90,7 +96,7 @@ $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLS)
 
 $(BUILDDIR)/%.o : %.C $(INCLS)
 	@echo  "Building object file '$@' ..."
-	@$(CXX) -Dstand -g $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) -DSTANDALONE -g $(CXXFLAGS) -c -o $@ $<
 
 $(SO) : $(OBJS) $(ROOTDICO)
 	@echo "Building shared library"
@@ -98,7 +104,12 @@ $(SO) : $(OBJS) $(ROOTDICO)
 
 build : $(GUIO) $(SO)
 	@echo "Compiling macro $(GUISCR)"
-	@$(CXX) -Dstand -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
+	@$(CXX) -DSTANDALONE -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
+	@echo "Done"
+
+test: $(TESTO) $(SO)
+	@echo "Compiling test macro $(TESTSCR)"
+	@$(CXX) -DSTANDALONE -g -o test.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
 	@echo "Done"
 
 #***********************************************#
