@@ -42,17 +42,17 @@ private:
     UInt_t _interpMult;
     ROOT::Math::Interpolator* _inter;
 
-    int* d_kl;
-    int* _p;
+    Long_t* d_kl;
+    Long_t* _p;
 
     void setInter(std::vector<int>*);
 
-    void trapFilter(int*, const int);
-    void setD_kl(int*, const int);
-    int setP(int*, const int);
+    void trapFilter(Long_t*, const int);
+    void setD_kl(Long_t*, const int);
+    Long_t setP(Long_t*, const int);
     void prepP(const int);
-    void p(int*, const int);
-    int s(int*, const int);
+    void p(Long_t*, const int);
+    Long_t s(Long_t*, const int);
     std::vector<double> nonInterpDeriv(std::vector<int>*);
 
     
@@ -72,7 +72,7 @@ public:
     UInt_t getInterpMult() { return _interpMult;}
     Double_t getPeakThreshold() { return _peakThreshold;}
 
-    void trapFilter(std::vector<int> *signal, const int start, const int length);
+    void trapFilter(std::vector<Long_t> *signal, const int start, const int length);
     Float_t QDC(std::vector<int> *signal, const int start, const int length);
 
     void CFD(std::vector<double>*, const int, const int, const int);
@@ -84,7 +84,7 @@ public:
 
     std::vector<double> deriv(std::vector<int> *signal);
 
-    int peakFind(std::vector<int>::iterator, std::vector<int>::iterator);
+    Long_t peakFind(std::vector<Long_t>::iterator, std::vector<Long_t>::iterator);
 
     ClassDef(SignalProcessor,0)
 };

@@ -67,6 +67,7 @@ DataProcessor::~DataProcessor()
 int DataProcessor::processEvent(UInt_t f, UInt_t event)
 {
     //make sure the event is valid
+    std::cout << "event: " << event << std::endl;
     if(event >= getNumEvents())
 	return 1;
     
@@ -293,7 +294,7 @@ Float_t DataProcessor::getBaseline() { return _baseline; }
 UInt_t DataProcessor::getBadEvents() { return _badEvents; }
 SignalProcessor* DataProcessor::getSignalP() { return signalProcessor; }
 const std::vector<int> DataProcessor::getSignal() { return signal; }
-const std::vector<int> DataProcessor::getTrap() { return trap; }
+const std::vector<Long_t> DataProcessor::getTrap() { return trap; }
 const std::vector<int> DataProcessor::getDeriv()
 {
     std::vector<Int_t> out;

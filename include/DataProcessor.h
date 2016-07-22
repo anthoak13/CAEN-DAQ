@@ -49,7 +49,7 @@ private:
     std::vector<int> signal;
     std::vector<double> deriv;
     std::vector<double> cfd;
-    std::vector<int> trap;
+    std::vector<Long_t> trap;
     Float_t _baseline;
     UInt_t _timestamp;
     Float_t _zero;
@@ -96,7 +96,7 @@ public:
     const std::vector<int> getSignal();
     const std::vector<int> getDeriv();
     const std::vector<int> getCFD();
-    const std::vector<int> getTrap();
+    const std::vector<Long_t> getTrap();
     const std::vector<int> getRaw();
     
     ClassDef(DataProcessor, 0)

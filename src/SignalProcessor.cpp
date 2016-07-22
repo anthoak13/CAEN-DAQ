@@ -36,8 +36,8 @@ SignalProcessor::SignalProcessor(const UInt_t riseTime,   const UInt_t M,
     _interpMult = interpMult;
 
     _inter = NULL;
-    d_kl = new int[10];
-    _p = new int[10];
+    d_kl = new Long_t[10];
+    _p = new Long_t[10];
 }
 
 //Destructor
@@ -55,7 +55,7 @@ Int_t SignalProcessor::getOffset() { return _offset;}
 Double_t SignalProcessor::getScaling() { return _scaling;}
 Int_t SignalProcessor::getThreshold() { return _threshold;}
 
-void SignalProcessor::trapFilter(std::vector<int>* signal, const int start, const int length)
+void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const int start, const int length)
 {
     if(start + length >= signal->size())
 	return;
@@ -63,10 +63,10 @@ void SignalProcessor::trapFilter(std::vector<int>* signal, const int start, cons
 
 }
 
-void SignalProcessor::trapFilter(int* signal, const int signalLength)
+void SignalProcessor::trapFilter(Long_t* signal, const int signalLength)
 {
     //Loop through the signal to convolve
-    int* modSig = new int[signalLength];
+    Long_t* modSig = new Long_t[signalLength];
 
     //Get arrays for processing signal
     setD_kl(signal, signalLength);
@@ -175,14 +175,14 @@ std::vector<double> SignalProcessor::nonInterpDeriv(std::vector<int>* signal)
 //Uses the change in derivative at the beginning and end of the flat top to
 //find the peak value. If the derivative doesn't change as expected, ie it is exeptionally
 //smooth, it returns a simple maximum of the trapazoid
-int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>::iterator end)
+Long_t SignalProcessor::peakFind(std::vector<Long_t>::iterator start, std::vector<Long_t>::iterator end)
 {
     const double thresh = _peakThreshold;
-    std::vector<int>::iterator peak1;
-    std::vector<int>::iterator mid;
-    std::vector<int>::iterator peak2;
+    std::vector<Long_t>::iterator peak1;
+    std::vector<Long_t>::iterator mid;
+    std::vector<Long_t>::iterator peak2;
     bool posDeriv = (*(start+1) - *start) > 0;
-    std::vector<int>::iterator it = start;
+    std::vector<Long_t>::iterator it = start;
     bool midValid = true;
     bool secondValid = true;
     double val = 0.0;
@@ -223,7 +223,7 @@ int SignalProcessor::peakFind(std::vector<int>::iterator start, std::vector<int>
     secondValid = ( val < thresh && val > -thresh );
 
     
-    int returnValue;
+    Long_t returnValue;
     //If the peak is valid get the average
     if(midValid && secondValid)
 	
@@ -267,14 +267,14 @@ void SignalProcessor::setInter(std::vector<int>* in)
 }
 
 //signal is unmodified
-void SignalProcessor::setD_kl(int* signal, const int length)
+void SignalProcessor::setD_kl(Long_t* signal, const int length)
 {
     int k = (int) _decayTime;
     int l = (int) (_flatMultiplier * 2 * _decayTime + k);
 
     //Cleanup memory
     delete [] d_kl;
-    d_kl = new int[length];
+    d_kl = new Long_t[length];
 
     //assumes k < l
     for(int n = 0; n <length; n++)
@@ -293,13 +293,13 @@ void SignalProcessor::setD_kl(int* signal, const int length)
 }
 
 //signal is unmodified, assumes d_kl is properly set
-void SignalProcessor::p(int* signal, const int n)
+void SignalProcessor::p(Long_t* signal, const int n)
 {
     prepP(n);
     setP(signal, n-1);
 }
 
-int SignalProcessor::setP(int* signal, const int n)
+Long_t SignalProcessor::setP(Long_t* signal, const int n)
 {
     //Basecase
     if( n < 1)
@@ -315,14 +315,14 @@ int SignalProcessor::setP(int* signal, const int n)
 void SignalProcessor::prepP(const int n)
 {
     delete [] _p;
-    _p = new int[n];
+    _p = new Long_t[n];
 }
 
 
 //modifies signal inplace, assumes d_kl and p are properly set
-int SignalProcessor::s(int* signal, const int n)
+Long_t SignalProcessor::s(Long_t* signal, const int n)
 {
-    int ret = (_p[n] + d_kl[n] * _M);
+    Long_t ret = (_p[n] + d_kl[n] * _M);
 
     //Base case
     if(n < 1)
