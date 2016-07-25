@@ -98,6 +98,18 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     }
     _baseline /= (metaData[f][2] - metaData[f][1]);
 
+    //Check basline for slope
+    const Double_t baseTol = 0.01;
+    Double_t base1 = (voltages[metaData[f][1]] - _baseline)/_baseline;
+    Double_t base2 = (voltages[metaData[f][2]] - _baseline)/_baseline;
+    bool baseValid = !((base1 > baseTol) && ( base2 < -baseTol));
+    _baseline = baseValid ? _baseline : voltages[metaData[f][2]];
+    if(!baseValid)
+    {
+	std::cout << "Baseline sloped at: " << event << " Baseline: " << _baseline << std::endl;
+    }
+
+    
     //Populate signal
     for( int i = 0; i < getEventLength(); i++)
     {
@@ -116,16 +128,23 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	raw.push_back(voltages[i]);
     }
 
-    //Get the derivative and perform cfd
-    deriv = signalProcessor->deriv(&signal);
-    cfd = deriv;
-    signalProcessor->CFD(&cfd);
+    //Get the derivative and perform cfd if the base is valid
+    if(baseValid)
+    {
+	deriv = signalProcessor->deriv(&signal);
+	cfd = deriv;
+	signalProcessor->CFD(&cfd);
+	_zero = signalProcessor->zeroAfterThreshold(&cfd);
 
-    //Find zero and make sure it's valid
-    _zero = signalProcessor->zeroAfterThreshold(&cfd);
-    if( ( _zero + metaData[f][4]-metaData[f][3] ) > trap.size())
+	//make sure the zero is valid
+	if( (_zero + metaData[f][4]-metaData[f][3]) > trap.size() )
+	_zero = metaData[f][3];
+    }
+    else
+	//baseline was sloped so just use user defined sig start
 	_zero = metaData[f][3];
 
+    
     //Apply trapazoid filter and peakfind
     signalProcessor->trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
     _Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
@@ -293,27 +312,36 @@ Float_t DataProcessor::getZero() { return _zero; }
 Float_t DataProcessor::getBaseline() { return _baseline; }
 UInt_t DataProcessor::getBadEvents() { return _badEvents; }
 SignalProcessor* DataProcessor::getSignalP() { return signalProcessor; }
-const std::vector<int> DataProcessor::getSignal() { return signal; }
+
 const std::vector<Long_t> DataProcessor::getTrap() { return trap; }
-const std::vector<int> DataProcessor::getDeriv()
+const std::vector<Long_t> DataProcessor::getSignal()
 {
-    std::vector<Int_t> out;
-    for(std::vector<double>::iterator it = deriv.begin(); it < deriv.end(); it+= signalProcessor->getInterpMult())
+    std::vector<Long_t> out;
+    out.reserve(signal.size());
+    for(auto &&num:signal)
+	out.push_back(num);
+    
+    return out;
+}
+const std::vector<Long_t> DataProcessor::getDeriv()
+{
+    std::vector<Long_t> out;
+    for(auto it = deriv.begin(); it < deriv.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
-const std::vector<int> DataProcessor::getCFD()
+const std::vector<Long_t> DataProcessor::getCFD()
 {
-    std::vector<Int_t> out;
-    for(std::vector<double>::iterator it = cfd.begin(); it < cfd.end(); it+= signalProcessor->getInterpMult())
+    std::vector<Long_t> out;
+    for(auto it = cfd.begin(); it < cfd.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
-const std::vector<int> DataProcessor::getRaw()
+const std::vector<Long_t> DataProcessor::getRaw()
 {
-    std::vector<Int_t> out;
-    for(auto it = raw.begin(); it < raw.end(); it++)
-	out.push_back(*it);
+    std::vector<Long_t> out;
+    for(auto &&num:raw)
+	out.push_back(num);
     return out;
 }
 

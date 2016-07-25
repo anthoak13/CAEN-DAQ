@@ -308,9 +308,7 @@ void MainFrame::DoDraw()
 
 	if (fDrawSelect[i]->GetState() == kButtonDown)
 	{
-	    std::cout << "Drawing " << i;
-	    std::vector<int> output;
-	    std::vector<Long_t> out2;
+	    std::vector<Long_t> output;
 	    switch(i)
 	    {
 	    case 0:
@@ -318,8 +316,8 @@ void MainFrame::DoDraw()
 		hist.push_back(new TH1F("h1", "Signal", output.size(), 0, output.size()));
 		break;
 	    case 1:
-		out2 = dataP->getTrap();
-		hist.push_back( new TH1F("h2", "Trap", out2.size(), 0, out2.size()));
+		output = dataP->getTrap();
+		hist.push_back( new TH1F("h2", "Trap", output.size(), 0, output.size()));
 		break;
 	    case 2:
 		output = dataP->getDeriv();
@@ -340,24 +338,21 @@ void MainFrame::DoDraw()
 	    //Populate the histogram
 	    if(i < 5)
 	    {
-		if(i == 1)
-		    for(int j = 0; j < out2.size(); j++)
-			hist.back()->Fill(j, out2[j]);
-		else
-		    for(int j = 0; j < output.size(); j++)
-			hist.back()->Fill(j, output[j]);
+		for(int j = 0; j < output.size(); j++)
+		    hist.back()->Fill(j, output[j]);
 		
 		//Draw hist
 		hist.back()->SetLineColor((i == 4) ? 6 : i+1);
 		hist.back()->SetLineWidth(2);
+		hist.back()->SetStats(false);
 		hist.back()->Draw("hist same");
 	    }
 	    
 #ifdef DEBUG
 	    if( i == 1 )
 	    {
-		hist.push_back(new TH1F("h5", "Q val", out2.size(), 0, out2.size()));
-		for(int j = 0; j < out2.size(); j++)
+		hist.push_back(new TH1F("h5", "Q val", output.size(), 0, output.size()));
+		for(int j = 0; j < output.size(); j++)
 		    hist.back()->Fill(j, dataP->getQ());
 		
 		//Draw hist

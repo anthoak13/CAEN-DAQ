@@ -93,11 +93,11 @@ public:
     Float_t getQDC();
     UInt_t getBadEvents();
     
-    const std::vector<int> getSignal();
-    const std::vector<int> getDeriv();
-    const std::vector<int> getCFD();
+    const std::vector<Long_t> getSignal();
+    const std::vector<Long_t> getDeriv();
+    const std::vector<Long_t> getCFD();
     const std::vector<Long_t> getTrap();
-    const std::vector<int> getRaw();
+    const std::vector<Long_t> getRaw();
     
     ClassDef(DataProcessor, 0)
 };
