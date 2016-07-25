@@ -92,22 +92,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     fread(&voltages, 2, getEventLength(), files[f]);
 
     //Do baseline correction
-    for(int i = metaData[f][1]; i < metaData[f][2]; i++)
-    {
-	_baseline += voltages[i];
-    }
-    _baseline /= (metaData[f][2] - metaData[f][1]);
-
-    //Check basline for slope
-    const Double_t baseTol = 0.01;
-    Double_t base1 = (voltages[metaData[f][1]] - _baseline)/_baseline;
-    Double_t base2 = (voltages[metaData[f][2]] - _baseline)/_baseline;
-    bool baseValid = !((base1 > baseTol) && ( base2 < -baseTol));
-    _baseline = baseValid ? _baseline : voltages[metaData[f][2]];
-    if(!baseValid)
-    {
-	std::cout << "Baseline sloped at: " << event << " Baseline: " << _baseline << std::endl;
-    }
+    bool baseValid = getBaseline(voltages, f, 0.01);
 
     
     //Populate signal
@@ -131,7 +116,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     //Get the derivative and perform cfd if the base is valid
     if(baseValid)
     {
-	deriv = signalProcessor->deriv(&signal);
+	deriv = signalProcessor->deriv(signal);
 	cfd = deriv;
 	signalProcessor->CFD(&cfd);
 	_zero = signalProcessor->zeroAfterThreshold(&cfd);
@@ -151,12 +136,14 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 				  metaData[f][4] - metaData[f][3]);
     
     //Do old QDC method
-    _QDC = signalProcessor->QDC(&signal, _zero, metaData[f][4] - metaData[f][3]);
+    _QDC = signalProcessor->QDC(signal, _zero, metaData[f][4] - metaData[f][3]);
 
     //Get the timestamp
     _timestamp = header[5];
 
-
+    //TODO: remove
+    deriv = signalProcessor->deriv(trap);
+    
     if(_Q < 0)
     {
 #ifdef DEBUG
@@ -210,8 +197,13 @@ int DataProcessor::processFiles(bool verbose)
     //Loop though every file
     for(int f = 0; f < _numCh; f++)
     {
-	//If the channel is unused, skip it
-	if(metaData[f][0] == 0)
+	//check to make sure meta data is possible (all less than the total event length
+	bool validMeta = true;
+	for(int i = 1; i < 5; i++)
+	    validMeta &= (metaData[f][i] < getEventLength());
+	
+	//If the channel is unused or meta is invalid, skip it
+	if(metaData[f][0] == 0 || !validMeta)
 	{
 	    if(verbose)
 		std::cout << "Skipping channel: " << f << std::endl;
@@ -483,5 +475,29 @@ void DataProcessor::writeMetaData()
     }
 
     file.close();
+}
+
+bool DataProcessor::getBaseline(UShort_t *sig, const int f, const Double_t tol)
+{
+    //Do baseline correction
+    for(int i = metaData[f][1]; i < metaData[f][2]; i++)
+    {
+	_baseline += sig[i];
+    }
+    _baseline /= (metaData[f][2] - metaData[f][1]);
+
+    //Get variables to determine slope
+    const Double_t base1 = (sig[metaData[f][1]] - _baseline)/_baseline;
+    const Double_t base2 = (sig[metaData[f][2]] - _baseline)/_baseline;
+    const bool baseValid = !((base1 > tol) && ( base2 < -tol));
+
+    //Check basline for slope
+    _baseline = baseValid ? _baseline : sig[metaData[f][2]];
+#ifdef DEBUG
+    if(!baseValid)
+	std::cout << "Baseline sloped at: " << _baseline << std::endl;
+#endif
+
+    return baseValid;
 }
 				 

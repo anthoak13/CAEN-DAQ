@@ -45,7 +45,7 @@ private:
     Long_t* d_kl;
     Long_t* _p;
 
-    void setInter(std::vector<int>*);
+    void setInter(const std::vector<Long_t>&);
 
     void trapFilter(Long_t*, const int);
     void setD_kl(Long_t*, const int);
@@ -53,7 +53,7 @@ private:
     void prepP(const int);
     void p(Long_t*, const int);
     Long_t s(Long_t*, const int);
-    std::vector<double> nonInterpDeriv(std::vector<int>*);
+    std::vector<double> nonInterpDeriv(const std::vector<Long_t>&);
 
     
 public:
@@ -73,7 +73,7 @@ public:
     Double_t getPeakThreshold() { return _peakThreshold;}
 
     void trapFilter(std::vector<Long_t> *signal, const int start, const int length);
-    Float_t QDC(std::vector<int> *signal, const int start, const int length);
+    Float_t QDC(const std::vector<int> &signal, const int start, const int length);
 
     void CFD(std::vector<double>*, const int, const int, const int);
     void CFD(std::vector<double>*, const int);
@@ -82,7 +82,8 @@ public:
     int zeroAfterThreshold(std::vector<double> *signal, const int);
     int zeroAfterThreshold(std::vector<double> *signal);
 
-    std::vector<double> deriv(std::vector<int> *signal);
+    std::vector<double> deriv(const std::vector<int> &signal);
+    std::vector<double> deriv(const std::vector<Long_t> &signal);
 
     Long_t peakFind(std::vector<Long_t>::iterator, std::vector<Long_t>::iterator);
 

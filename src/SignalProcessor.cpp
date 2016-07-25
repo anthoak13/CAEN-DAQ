@@ -143,7 +143,13 @@ int SignalProcessor::zeroAfterThreshold(std::vector<double>* signal, const int t
     return std::distance(signal->begin(), it)/_interpMult;
 }
 
-std::vector<double> SignalProcessor::deriv(std::vector<int>* signal)
+std::vector<double> SignalProcessor::deriv(const std::vector<int> &signal)
+{
+    return deriv(std::vector<Long_t>(signal.begin(), signal.end()));
+}
+
+
+std::vector<double> SignalProcessor::deriv(const std::vector<Long_t> &signal)
 {
     if(_interpMult < 2)
 	return nonInterpDeriv(signal);
@@ -155,7 +161,7 @@ std::vector<double> SignalProcessor::deriv(std::vector<int>* signal)
     //calculate the stepsize
     double stepSize = 1.0 /_interpMult;
 
-    for(double i = 0; i < signal->size() - 1; i += stepSize)
+    for(double i = 0; i < signal.size() - 1; i += stepSize)
     {
 	out.push_back(_inter->Deriv(i));
     }
@@ -163,11 +169,11 @@ std::vector<double> SignalProcessor::deriv(std::vector<int>* signal)
     return out;
 }
 
-std::vector<double> SignalProcessor::nonInterpDeriv(std::vector<int>* signal)
+std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &signal)
 {
     std::vector<double> out;
-    for(int i = 1; i < signal->size(); i++)
-	out.push_back(signal->at(i) - signal->at(i-1));
+    for(int i = 1; i < signal.size(); i++)
+	out.push_back(signal[i] - signal[i-1]);
 
     return out;
 }
@@ -252,12 +258,12 @@ Long_t SignalProcessor::peakFind(std::vector<Long_t>::iterator start, std::vecto
 //*********Private functions ********************
 
 //Deletes the old interpolator and creates a new object to be used by other functions
-void SignalProcessor::setInter(std::vector<int>* in)
+void SignalProcessor::setInter(const std::vector<Long_t> &in)
 {
     //create x array
     std::vector<double> x;
     std::vector<double> y;
-    for(unsigned int i = 0; i < in->size(); i++) { x.push_back(i); y.push_back(in->at(i)); } 
+    for(unsigned int i = 0; i < in.size(); i++) { x.push_back(i); y.push_back(in[i]); } 
 
     if(_inter != NULL)
 	    delete _inter;
@@ -334,12 +340,12 @@ Long_t SignalProcessor::s(Long_t* signal, const int n)
     return ret;
 }
 
-Float_t SignalProcessor::QDC(std::vector<int> *signal, const int start, const int length)
+Float_t SignalProcessor::QDC(const std::vector<int> &signal, const int start, const int length)
 {
     int Q = 0;
     for(int i = 0; i < length; i++)
     {
-	Q += (*signal)[start+i];
+	Q += signal[start+i];
     }
     return ((Float_t)Q)/length;
     

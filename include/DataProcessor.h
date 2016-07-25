@@ -70,6 +70,8 @@ private:
     void writeMetaData();
     void setNumCh(const UInt_t);
 
+    bool getBaseline(UShort_t *voltages, const int f, const Double_t tol);
+
 public:
     DataProcessor(TString, TString,  const UInt_t, const UInt_t, const UInt_t);
     ~DataProcessor();
