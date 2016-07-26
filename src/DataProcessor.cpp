@@ -77,6 +77,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     cfd.clear();
     deriv.clear();
     trap.clear();
+    trapDeriv.clear();
     UInt_t header[getHeaderLength()];
     UShort_t voltages[getEventLength()];
     _baseline = 0;
@@ -119,7 +120,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	deriv = signalProcessor->deriv(signal);
 	cfd = deriv;
 	signalProcessor->CFD(&cfd);
-	_zero = signalProcessor->zeroAfterThreshold(&cfd);
+	_zero = signalProcessor->zeroAfterThreshold(cfd);
 
 	//make sure the zero is valid
 	if( (_zero + metaData[f][4]-metaData[f][3]) > trap.size() )
@@ -130,27 +131,29 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 	_zero = metaData[f][3];
 
     
-    //Apply trapazoid filter and peakfind
+    //Apply trapazoid filter
     signalProcessor->trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
-    _Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
-				  metaData[f][4] - metaData[f][3]);
+
+    //ID pileup using second deriv
+    trapDeriv = signalProcessor->secondDeriv((std::vector<Long_t>(trap.begin(), trap.begin() + _zero +
+								  metaData[f][4] - metaData[f][3])));
+					     
+    if(signalProcessor->peaksPastThreshold(trapDeriv, 21000, -20000, 30) > 1)
+    {
+	std::cout << "Failed new method: " << event << std::endl;
+	_badEvents++;
+	_Q = -1;
+    }
+    else
+	_Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
+				       metaData[f][4] - metaData[f][3]);
     
     //Do old QDC method
     _QDC = signalProcessor->QDC(signal, _zero, metaData[f][4] - metaData[f][3]);
 
     //Get the timestamp
     _timestamp = header[5];
-
-    //TODO: remove
-    deriv = signalProcessor->deriv(trap);
     
-    if(_Q < 0)
-    {
-#ifdef DEBUG
-	std::cout << "Failed event at: " << event << std::endl;
-#endif
-	_badEvents++;
-    }
     return 0;
 }
 
@@ -319,6 +322,13 @@ const std::vector<Long_t> DataProcessor::getDeriv()
 {
     std::vector<Long_t> out;
     for(auto it = deriv.begin(); it < deriv.end(); it+= signalProcessor->getInterpMult())
+	out.push_back(*it);
+    return out;
+}
+const std::vector<Long_t> DataProcessor::getTrapDeriv()
+{
+    std::vector<Long_t> out;
+    for(auto it = trapDeriv.begin(); it < trapDeriv.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
@@ -494,8 +504,8 @@ bool DataProcessor::getBaseline(UShort_t *sig, const int f, const Double_t tol)
     //Check basline for slope
     _baseline = baseValid ? _baseline : sig[metaData[f][2]];
 #ifdef DEBUG
-    if(!baseValid)
-	std::cout << "Baseline sloped at: " << _baseline << std::endl;
+    //if(!baseValid)
+    //std::cout << "Baseline sloped at: " << _baseline << std::endl;
 #endif
 
     return baseValid;

@@ -37,8 +37,8 @@ private:
     TGLayoutHints *fLTab, *fHLabel, *fLDraw, *fLDrawButton;
     TGGroupFrame *fGDraw;
     TGVerticalFrame *fVertDraw, *fVertHist;
-    TGComboBox *fSelectHist[5];
-    TGCheckButton *fDrawSelect[5];
+    TGComboBox *fSelectHist[6];
+    TGCheckButton *fDrawSelect[6];
     TRootEmbeddedCanvas *fEmbedded, *fEmbedded2;
     TGComboBox *fComboDisp;
     TGLabel *fLabelDisp, *fLabelCh2;
@@ -61,12 +61,13 @@ private:
 
     
 #ifndef __CINT__
-    const char *drawLabel[5] = {
+    const char *drawLabel[6] = {
     "signal",
     "trap",
     "deriv",
     "cfd",
-    "raw" };
+    "raw",
+    "trap deriv"};
 #endif
 
     enum EMenIds {

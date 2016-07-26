@@ -128,7 +128,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fGDraw->AddFrame(fVertHist, fLDraw);
     fVertDraw->AddFrame(new TGLabel(fVertDraw, ""));
     fVertHist->AddFrame(new TGLabel(fVertHist, "hist #"));
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 6; i++)
     {
 	fDrawSelect[i] = new TGCheckButton(fVertDraw, drawLabel[i]);
 	fSelectHist[i] = new TGComboBox(fVertHist);
@@ -303,7 +303,7 @@ void MainFrame::DoDraw()
     for(auto&& h:hist) delete h;
     hist.clear();
     //Loop through the options and create a canvas with all of the checked boxes
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 6; i++)
     {
 
 	if (fDrawSelect[i]->GetState() == kButtonDown)
@@ -330,13 +330,18 @@ void MainFrame::DoDraw()
 	    case 4:
 		output = dataP->getRaw();
 		hist.push_back(new TH1F("h5", "Raw", output.size(), 0, output.size()));
+		break;
+	    case 5:
+		output = dataP->getTrapDeriv();
+		hist.push_back(new TH1F("h6", "Raw", output.size(), 0, output.size()));
+		break;
 	    default:
 		break;
 	    }
 	    
 
 	    //Populate the histogram
-	    if(i < 5)
+	    if(i < 6)
 	    {
 		for(int j = 0; j < output.size(); j++)
 		    hist.back()->Fill(j, output[j]);
@@ -351,7 +356,7 @@ void MainFrame::DoDraw()
 #ifdef DEBUG
 	    if( i == 1 )
 	    {
-		hist.push_back(new TH1F("h5", "Q val", output.size(), 0, output.size()));
+		hist.push_back(new TH1F("h7", "Q val", output.size(), 0, output.size()));
 		for(int j = 0; j < output.size(); j++)
 		    hist.back()->Fill(j, dataP->getQ());
 		

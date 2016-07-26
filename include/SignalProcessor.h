@@ -47,19 +47,20 @@ private:
 
     void setInter(const std::vector<Long_t>&);
 
-    void trapFilter(Long_t*, const int);
-    void setD_kl(Long_t*, const int);
-    Long_t setP(Long_t*, const int);
-    void prepP(const int);
-    void p(Long_t*, const int);
-    Long_t s(Long_t*, const int);
+    void trapFilter(Long_t*, const UInt_t);
+    void setD_kl(Long_t*, const UInt_t);
+    Long_t setP(Long_t*, const UInt_t);
+    void prepP(const UInt_t);
+    void p(Long_t*, const UInt_t);
+    Long_t s(Long_t*, const UInt_t);
     std::vector<double> nonInterpDeriv(const std::vector<Long_t>&);
+    std::vector<double> nonInterpSecondDeriv(const std::vector<Long_t>&);
 
     
 public:
-    SignalProcessor(const UInt_t riseTime=12,   const UInt_t M=12,
-		    const Double_t flatMult=2.0/3.0, const Double_t peakThreshold=0.1,
-		    const UInt_t zeroOffset=6, const Int_t zeroThreshold=-20,
+    SignalProcessor(const UInt_t riseTime=3770,   const UInt_t M=3770,
+		    const Double_t flatMult=0.05, const Double_t peakThreshold=0.1,
+		    const UInt_t zeroOffset=60, const Int_t zeroThreshold=-5,
 		    const UInt_t interpMult=1, const Double_t scalingMult=0.8);
     ~SignalProcessor();
     
@@ -72,20 +73,30 @@ public:
     UInt_t getInterpMult() { return _interpMult;}
     Double_t getPeakThreshold() { return _peakThreshold;}
 
-    void trapFilter(std::vector<Long_t> *signal, const int start, const int length);
-    Float_t QDC(const std::vector<int> &signal, const int start, const int length);
+    void trapFilter(std::vector<Long_t> *signal, const UInt_t start, const UInt_t length);
+    Float_t QDC(const std::vector<int> &signal, const UInt_t start, const UInt_t length);
 
-    void CFD(std::vector<double>*, const int, const int, const int);
+    void CFD(std::vector<double> *signal, const UInt_t start, const UInt_t length, const int shift);
     void CFD(std::vector<double>*, const int);
     void CFD(std::vector<double>*);
     
-    int zeroAfterThreshold(std::vector<double> *signal, const int);
-    int zeroAfterThreshold(std::vector<double> *signal);
+    int zeroAfterThreshold(const std::vector<double> &signal, const int threshold);
+    int zeroAfterThreshold(const std::vector<double> &signal);
 
-    std::vector<double> deriv(const std::vector<int> &signal);
     std::vector<double> deriv(const std::vector<Long_t> &signal);
+    std::vector<double> deriv(const std::vector<Int_t> &signal);
 
-    Long_t peakFind(std::vector<Long_t>::iterator, std::vector<Long_t>::iterator);
+    std::vector<double> secondDeriv(const std::vector<Long_t> &signal);
+
+    Long_t peakFind(const std::vector<Long_t>::iterator start, const std::vector<Long_t>::iterator end);
+
+    UInt_t peaksPastThreshold(std::vector<double>::const_iterator start,
+			      std::vector<double>::const_iterator end,
+			      const Long_t threshHigh, const Long_t threshLow,
+			      const UInt_t distBetweenPeaks);
+    
+    UInt_t peaksPastThreshold(const std::vector<double> &signal, const Long_t threshHigh,
+			      const Long_t threshLow, const UInt_t distBetweenPeaks);
 
     ClassDef(SignalProcessor,0)
 };
