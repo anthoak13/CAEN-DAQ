@@ -108,6 +108,8 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcesso
 	    break;
 	case 10:
 	    defaultVal = signalP->getPointsToAverage();
+	case 11:
+	    defaultVal = signalP->getPeakThreshold();
 	    break;
 	}
 
@@ -144,7 +146,7 @@ void ConfigPopout::DoOk()
 				  fEntry[4]->GetNumber(), fEntry[5]->GetNumber(),
 				  fEntry[6]->GetNumber(), fEntry[7]->GetNumber(),
 				  fEntry[8]->GetNumber(), fEntry[9]->GetNumber(),
-				  fEntry[10]->GetNumber());
+				  fEntry[10]->GetNumber(), fEntry[11]->GetNumber());
 
 
 

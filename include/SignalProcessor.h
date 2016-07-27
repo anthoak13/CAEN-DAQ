@@ -44,6 +44,7 @@ private:
 
     UInt_t _pointsToAverage;
     Int_t _peakDisplacement;
+    UInt_t _peakThreshold;
     
     mutable ROOT::Math::Interpolator* _inter;
     mutable Long_t* d_kl;
@@ -68,7 +69,7 @@ public:
 		    const Int_t  zeroThreshold=-5,const UInt_t interpMult=1,
 		    const Long_t pileHigh=40000,     const Long_t pileLow=-20000,
 		    const UInt_t peakLength=30,   const UInt_t pointsToAvg=0,
-		    const Int_t peakDisplacement=0);
+		    const Int_t peakDisplacement=0, const Int_t peakThreshold=0);
     ~SignalProcessor();
     
     Int_t getRiseTime() const;
@@ -85,6 +86,7 @@ public:
     
     UInt_t getPointsToAverage() const;
     Int_t getPeakDisplacement() const;
+    Int_t getPeakThreshold() const;
 
     void trapFilter(std::vector<Long_t> *signal, const UInt_t start, const UInt_t length) const;
     Float_t QDC(const std::vector<int> &signal, const UInt_t start, const UInt_t length) const;
@@ -95,7 +97,9 @@ public:
     std::vector<Double_t> CFD(const std::vector<Double_t> &signal) const;
     
     int zeroAfterThreshold(const std::vector<double> &signal, const int threshold) const;
-    int zeroAfterThreshold(const std::vector<double> &signal) const;
+
+    int cfdZero(const std::vector<double> &signal) const;
+    int peakZero(const std::vector<double> &signal) const;
 
     std::vector<double> deriv(const std::vector<Long_t> &signal) const;
     std::vector<double> deriv(const std::vector<Int_t> &signal) const;

@@ -67,8 +67,6 @@ DataProcessor::~DataProcessor()
 //return 0: success 
 Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 {
-    //make sure the event is valid
-    std::cout << "event: " << event << std::endl;
     if(event >= getNumEvents())
 	return 1;
     
@@ -120,7 +118,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     {
 	deriv = signalProcessor->deriv(signal);
 	cfd   =	signalProcessor->CFD(deriv);
-	_zero = signalProcessor->zeroAfterThreshold(cfd);
+	_zero = signalProcessor->cfdZero(cfd);
 
 	//make sure the zero is valid
 	if( (_zero + metaData[f][4]-metaData[f][3]) > trap.size() )
@@ -146,10 +144,13 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 	_Q = -1;
     }
     else
+    {
 	//_Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
 	//			       metaData[f][4] - metaData[f][3]);
-	//Charge should be the value of the Trap function at the zero crossing
-	_Q = trap.at(trapDeriv.size() + signalProcessor->getPeakDisplacement());
+        //Charge should be the value of the Trap function at the zero crossing
+	
+	_Q = trap.at(signalProcessor->peakZero(trapDeriv) + signalProcessor->getPeakDisplacement());
+    }
     
     //Do old QDC method
     //_QDC = signalProcessor->QDC(signal, _zero, metaData[f][4] - metaData[f][3]);

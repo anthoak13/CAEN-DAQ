@@ -19,15 +19,16 @@
 #include "SignalProcessor.h"
 #include "Math/Interpolator.h"
 #include "TMath.h"
+#include <iostream>
 
 ClassImp(SignalProcessor);
 //Constructor
-SignalProcessor::SignalProcessor(const UInt_t riseTime,      const UInt_t M,
-				 const Double_t flatMult,    const UInt_t zeroOffset,
-				 const Int_t  zeroThreshold, const UInt_t interpMult,
-				 const Long_t pileHigh,      const Long_t pileLow,
-				 const UInt_t peakLength,    const UInt_t pointsToAvg,
-				 const Int_t peakDisplacement)
+SignalProcessor::SignalProcessor(const UInt_t riseTime,       const UInt_t M,
+				 const Double_t flatMult,     const UInt_t zeroOffset,
+				 const Int_t  zeroThreshold,  const UInt_t interpMult,
+				 const Long_t pileHigh,       const Long_t pileLow,
+				 const UInt_t peakLength,     const UInt_t pointsToAvg,
+				 const Int_t peakDisplacement,const Int_t peakThreshold)
 {
     _riseTime = riseTime;
     _M = M;
@@ -43,6 +44,7 @@ SignalProcessor::SignalProcessor(const UInt_t riseTime,      const UInt_t M,
     
     _pointsToAverage = pointsToAvg;
     _peakDisplacement = peakDisplacement;
+    _peakThreshold = peakThreshold;
 
     //Variables not set by user
     _inter = NULL;
@@ -72,6 +74,7 @@ UInt_t SignalProcessor::getPeakLength() const { return _peakLength; }
 
 UInt_t SignalProcessor::getPointsToAverage() const { return _pointsToAverage; }
 Int_t SignalProcessor::getPeakDisplacement() const { return _peakDisplacement; }
+Int_t SignalProcessor::getPeakThreshold() const { return _peakThreshold; }
 
 
 void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t startIn,
@@ -138,11 +141,6 @@ std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal) 
     return CFD(signal, 0, signal.size(), _zeroOffset);
 }
 
-int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal) const
-{
-    return SignalProcessor::zeroAfterThreshold(signal, _zeroThreshold);
-}
-
 //Gets the next zero crossing after the signal reaches a min or max of threshold (determined by sgn of threshold)
 //return 0 if no zero is found
 int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const int threshold) const
@@ -166,8 +164,18 @@ int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const
     if(it == signal.end())
 	return 0;
     
-    return std::distance(signal.begin(), it)/_interpMult;
+    return std::distance(signal.begin(), it);
 }
+
+int SignalProcessor::cfdZero(const std::vector<double> &signal) const
+{
+    return zeroAfterThreshold(signal, _zeroThreshold)/_interpMult;
+}
+int SignalProcessor::peakZero(const std::vector<double> &signal) const
+{
+    return zeroAfterThreshold(signal, _peakThreshold);
+}
+
 std::vector<double> SignalProcessor::deriv(const std::vector<Int_t> &signal) const
 {
     return deriv(std::vector<Long_t>(signal.begin(), signal.end()));
@@ -248,12 +256,16 @@ std::vector<double> SignalProcessor::pileupTraceToThreshold(const std::vector<Lo
 {
     return pileupTraceToThreshold(signal, 0, signal.size()-2, _pileLow);
 }
+//TODO: make min code work regardless of the sign of threshold
 std::vector<double> SignalProcessor::pileupTraceToThreshold(const std::vector<Long_t> &signal,
 							    const UInt_t startIn, const UInt_t lengthIn,
 							    const Long_t threshold) const
 {
     std::vector<double> out;
+    std::vector<UInt_t> mins;
     bool reachedThreshold = false;
+    int minLoc = 0;
+    
     //Lambdas to easily compare. Takes sign of threshold into account
     //true: in < -threshold || in > +threshold; always false if threshold = 0
     auto compare = [=] (Long_t in){ return ( threshold < 0 && in < threshold ) ||
@@ -432,23 +444,20 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
 		min = it;
 	}
     }
-
-    if(threshLow != 0)
-    {
-	//Looped through all peaks, now return the number of peaks less than the min
-	UInt_t minLoc = std::distance(start, min);
-	UInt_t numPeaks = 0;
-	for(auto&& num:peaks)
-	    if(num < minLoc)
-	    {
+    
+    //Looped through all peaks, now return the number of peaks less than the min
+    UInt_t minLoc = std::distance(start, min);
+    //std::cout << "min loc: " << minLoc << std::endl;
+    UInt_t numPeaks = 0;
+    for(auto&& peakLoc:peaks)
+	if(peakLoc < minLoc)
+	{
 		//std::cout << " Peak at: " << num;
-		numPeaks++;
-	    }
-	//std::cout <<  std::endl;
-	return numPeaks;
-    }
-    else
-	return peaks.size();
+	    numPeaks++;
+	}
+    //std::cout << "num peaks: " << numPeaks<< std::endl;
+
+    return numPeaks;
 }
 
 Float_t SignalProcessor::QDC(const std::vector<int> &signal, const UInt_t start, const UInt_t length) const

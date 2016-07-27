@@ -21,7 +21,7 @@ class ConfigPopout {
     RQ_OBJECT("ConfigPopout");
 
 private:
-    static constexpr UInt_t numEntries = 11;
+    static constexpr UInt_t numEntries = 12;
     TGTransientFrame *fMain;
     TGCompositeFrame *f1,*f11, *f2;
     TGGroupFrame *fTrap, *fZero, *fPileup, *fPeak;
@@ -45,7 +45,8 @@ private:
     "Peak Length",
 
     "Distance to sample",
-    "Points to average "};
+    "Points to average ",
+    "Peak Threshold"};
 #endif
     
     
