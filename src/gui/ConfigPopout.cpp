@@ -20,7 +20,8 @@
 ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcessor *dataP)
 {
     signalP = dataP->getSignalP();
-    //create main framw
+    
+    //create main frame
     fMain = new TGTransientFrame(p, main, 10, 10, kVerticalFrame);
     fMain->Connect("CloseWindow()", "ConfigPopout", this, "CloseWindow()");
     fMain->DontCallClose();
@@ -29,11 +30,13 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcesso
     //Transient frame has a vertical frame by default (b/c default options)
     //Create 2 verical frames for groups and buttons
     f1 = new TGCompositeFrame(fMain, 60, 20, kHorizontalFrame);
+    f11 = new TGCompositeFrame(fMain, 60, 20, kHorizontalFrame);
     f2 = new TGCompositeFrame(fMain, 60, 20, kHorizontalFrame);
 
     //Add options and buttons
     TGLayoutHints *mainHints =  new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 15, 0);
     fMain->AddFrame(f1, mainHints);
+    fMain->AddFrame(f11, mainHints);
     fMain->AddFrame(f2, new TGLayoutHints(kLHintsTop | kLHintsRight, 5, 5, 0, 5));
 
 
@@ -50,47 +53,69 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcesso
     //Create group frames
     fTrap = new TGGroupFrame(f1, "Trap Filter", kVerticalFrame);
     fZero = new TGGroupFrame(f1, "Zero Filter", kVerticalFrame);
+    fPileup = new TGGroupFrame(f11, "Pileup detection", kVerticalFrame);
+    fPeak = new TGGroupFrame(f11, "Peak sampling", kVerticalFrame);
     TGLayoutHints *fL1 = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 0, 5, 0);
     TGLayoutHints *fL2 = new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 2, 2, 2, 2);
     f1->AddFrame(fTrap, fL1);
     f1->AddFrame(fZero, fL1);
+    f11->AddFrame(fPileup, fL1);
+    f11->AddFrame(fPeak, fL1);
 
-    for(int i = 0; i < 4; i++)
+    auto getFrame = [=](int i) { switch(i/3) { case 0: return fTrap;
+	                                       case 1: return fZero;
+					       case 2: return fPileup;
+	                                       case 3: return fPeak; };};
+    for(int i = 0; i < numEntries; i++)
     {
 	//Create frames and add to group frame
-	fNumTrap[i] = new TGHorizontalFrame(fTrap, 60, 20);
-	fNumZero[i] = new TGHorizontalFrame(fZero, 60, 20);
-	fTrap->AddFrame(fNumTrap[i], fL2);
-	fZero->AddFrame(fNumZero[i], fL2);
+	fNumFrames[i] = new TGHorizontalFrame(getFrame(i), 60, 20);
+	getFrame(i)->AddFrame(fNumFrames[i], fL2);
 
 	//Add num entries //TODO::Load in default values with current values from DataProcessor
-	Double_t default1, default2;
+	Double_t defaultVal = 0;
+	//determine default value
 	switch(i) {
 	case 0:
-		default1 = signalP->getDecayTime();
-	        default2 = signalP->getOffset();
-		break;
+	    defaultVal = signalP->getRiseTime();
+	    break;
 	case 1:
-		default1 = signalP->getFlatMult();
-	        default2 = signalP->getScaling();
-		break;
+	    defaultVal = signalP->getM();
+	    break;
 	case 2:
-		default1 = signalP->getM();
-	        default2 = signalP->getThreshold();
-		break;
+	    defaultVal = signalP->getFlatMult();
+	    break;
 	case 3:
-	    default1 = signalP->getPeakThreshold();
-	    default2 = signalP->getInterpMult();
+	    defaultVal = signalP->getZeroOffset();
+	    break;
+	case 4:
+	    defaultVal = signalP->getZeroThreshold();
+	    break;
+	case 5:
+	    defaultVal = signalP->getInterpMult();
+	    break;
+	case 6:
+	    defaultVal = signalP->getPileHigh();
+	    break;
+	case 7:
+	    defaultVal = signalP->getPileLow();
+	    break;
+	case 8:
+	    defaultVal = signalP->getPeakLength();
+	    break;
+	case 9:
+	    defaultVal = signalP->getPeakDisplacement();
+	    break;
+	case 10:
+	    defaultVal = signalP->getPointsToAverage();
 	    break;
 	}
-	fEntryTrap[i] = new TGNumberEntry(fNumTrap[i], default1);
-	fEntryZero[i] = new TGNumberEntry(fNumZero[i], default2);
-	fNumTrap[i]->AddFrame(fEntryTrap[i], fL2);
-	fNumZero[i]->AddFrame(fEntryZero[i], fL2);
+
+	fEntry[i] = new TGNumberEntry(fNumFrames[i], defaultVal);
+	fNumFrames[i]->AddFrame(fEntry[i], fL2);
 
 	//Add labels
-	fNumTrap[i]->AddFrame( new TGLabel(fNumTrap[i], fLabel[i]), fL2);
-	fNumZero[i]->AddFrame( new TGLabel(fNumZero[i], fLabel[i+4]), fL2);
+	fNumFrames[i]->AddFrame( new TGLabel(fNumFrames[i], fLabel[i]), fL2);
     }
 
     fMain->SetWindowName("Config");
@@ -114,10 +139,14 @@ void ConfigPopout::DoOk()
     
     //update signal processor with new info
     delete signalP;
-    signalP = new SignalProcessor(fEntryTrap[0]->GetNumber(), fEntryTrap[2]->GetNumber(),
-				  fEntryTrap[1]->GetNumber(), fEntryTrap[3]->GetNumber(),
-				  fEntryZero[0]->GetNumber(), fEntryZero[2]->GetNumber(),
-				  fEntryZero[3]->GetNumber(), fEntryZero[1]->GetNumber());
+    signalP = new SignalProcessor(fEntry[0]->GetNumber(), fEntry[1]->GetNumber(),
+				  fEntry[2]->GetNumber(), fEntry[3]->GetNumber(),
+				  fEntry[4]->GetNumber(), fEntry[5]->GetNumber(),
+				  fEntry[6]->GetNumber(), fEntry[7]->GetNumber(),
+				  fEntry[8]->GetNumber(), fEntry[9]->GetNumber(),
+				  fEntry[10]->GetNumber());
+
+
 
     std::cout << "Updated config" << std::endl;
     CloseWindow();

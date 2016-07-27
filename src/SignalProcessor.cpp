@@ -17,24 +17,34 @@
 
 //include files
 #include "SignalProcessor.h"
-#include <iostream>
+#include "Math/Interpolator.h"
+#include "TMath.h"
 
 ClassImp(SignalProcessor);
 //Constructor
-SignalProcessor::SignalProcessor(const UInt_t riseTime,   const UInt_t M,
-		    const Double_t flatMult, const Double_t peakThreshold,
-		    const UInt_t zeroOffset, const Int_t zeroThreshold,
-		    const UInt_t interpMult, const Double_t scalingMult)
+SignalProcessor::SignalProcessor(const UInt_t riseTime,      const UInt_t M,
+				 const Double_t flatMult,    const UInt_t zeroOffset,
+				 const Int_t  zeroThreshold, const UInt_t interpMult,
+				 const Long_t pileHigh,      const Long_t pileLow,
+				 const UInt_t peakLength,    const UInt_t pointsToAvg,
+				 const Int_t peakDisplacement)
 {
-    _decayTime = riseTime;
+    _riseTime = riseTime;
     _M = M;
     _flatMultiplier = flatMult;
-    _peakThreshold = peakThreshold;
-    _offset = zeroOffset;
-    _scaling = scalingMult;
-    _threshold = zeroThreshold;
+
+    _zeroOffset = zeroOffset;
+    _zeroThreshold = zeroThreshold;
     _interpMult = interpMult;
 
+    _pileHigh = pileHigh;
+    _pileLow = pileLow;
+    _peakLength = peakLength;
+    
+    _pointsToAverage = pointsToAvg;
+    _peakDisplacement = peakDisplacement;
+
+    //Variables not set by user
     _inter = NULL;
     d_kl = new Long_t[10];
     _p = new Long_t[10];
@@ -48,20 +58,27 @@ SignalProcessor::~SignalProcessor()
 }
 
 //Public Functions
-Int_t  SignalProcessor::getDecayTime() const{ return _decayTime;}
+Int_t  SignalProcessor::getRiseTime() const{ return _riseTime;}
+Int_t SignalProcessor::getM() const{return  _M;}
 Double_t SignalProcessor::getFlatMult() const{ return _flatMultiplier;}
-Double_t SignalProcessor::getM() const{return  _M;}
-Int_t SignalProcessor::getOffset() const{ return _offset;}
-Double_t SignalProcessor::getScaling() const{ return _scaling;}
-Int_t SignalProcessor::getThreshold() const{ return _threshold;}
+
+Int_t SignalProcessor::getZeroOffset() const{ return _zeroOffset;}
+Int_t SignalProcessor::getZeroThreshold() const{ return _zeroThreshold;}
 UInt_t SignalProcessor::getInterpMult() const{ return _interpMult;}
-Double_t SignalProcessor::getPeakThreshold() const{ return _peakThreshold;}
+
+Long_t SignalProcessor::getPileHigh() const { return _pileHigh; }
+Long_t SignalProcessor::getPileLow() const { return _pileLow; }
+UInt_t SignalProcessor::getPeakLength() const { return _peakLength; }
+
+UInt_t SignalProcessor::getPointsToAverage() const { return _pointsToAverage; }
+Int_t SignalProcessor::getPeakDisplacement() const { return _peakDisplacement; }
+
 
 void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t startIn,
 				 const UInt_t lengthIn) const
 {
-    UInt_t start = (startIn >= signal->Size()) ? signalSize() - 1 : startIn;
-    UInt_t length = (startIn + lengthIn >= signal->Size()) ? signalSize() - 1 : lengthIn;
+    UInt_t start = (startIn >= signal->size()) ? signal->size() - 1 : startIn;
+    UInt_t length = (startIn + lengthIn >= signal->size()) ? signal->size() - 1 : lengthIn;
 
     trapFilter(&signal->at(start), length);
 
@@ -118,12 +135,12 @@ std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal, 
 }
 std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal) const
 {
-    return CFD(signal, 0, signal.size(), _offset);
+    return CFD(signal, 0, signal.size(), _zeroOffset);
 }
 
 int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal) const
 {
-    return SignalProcessor::zeroAfterThreshold(signal, _threshold);
+    return SignalProcessor::zeroAfterThreshold(signal, _zeroThreshold);
 }
 
 //Gets the next zero crossing after the signal reaches a min or max of threshold (determined by sgn of threshold)
@@ -227,6 +244,10 @@ std::vector<double> SignalProcessor::pileupTrace(const std::vector<Long_t> &sign
 }
 
 //gets pileup trace
+std::vector<double> SignalProcessor::pileupTraceToThreshold(const std::vector<Long_t> &signal) const
+{
+    return pileupTraceToThreshold(signal, 0, signal.size()-2, _pileLow);
+}
 std::vector<double> SignalProcessor::pileupTraceToThreshold(const std::vector<Long_t> &signal,
 							    const UInt_t startIn, const UInt_t lengthIn,
 							    const Long_t threshold) const
@@ -283,7 +304,7 @@ std::vector<double> SignalProcessor::pileupTraceToThreshold(const std::vector<Lo
 Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start,
 				 const std::vector<Long_t>::iterator end) const
 {
-    const double thresh = _peakThreshold;
+    const double thresh = 0.1;
     std::vector<Long_t>::iterator peak1;
     std::vector<Long_t>::iterator mid;
     std::vector<Long_t>::iterator peak2;
@@ -339,14 +360,10 @@ Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start,
 	    returnValue = *peak1;
     else 
 	returnValue = *(TMath::LocMax(start, end));
-
-#ifdef DEBUG
-    //  if(returnValue < 0)
-	std::cout << "Peak 1: " << *peak1 << " mid: " << *mid << " peak2: " << *peak2 << " mean: " << returnValue << std::endl;
-#endif
     
     return returnValue;
 }
+
 //Threshold low = 0 signifies that the function should to a straight count of the peaks
 UInt_t SignalProcessor::peaksPastThreshold(const std::vector<double> &signal, const Long_t threshHigh,
 					   const UInt_t distBetweenPeaks) const
@@ -364,6 +381,15 @@ UInt_t SignalProcessor::peaksPastThreshold(const std::vector<double> &signal,
 					   const UInt_t distBetweenPeaks) const
 {
     return peaksPastThreshold(signal.begin(), signal.end(), threshHigh, threshLow, distBetweenPeaks);
+}
+UInt_t SignalProcessor::peaksPastThreshold(const std::vector<double> &signal) const
+{
+    return peaksPastThreshold(signal, _pileHigh, _pileLow, _peakLength);
+}
+UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator start,
+					   std::vector<double>::const_iterator end) const
+{
+    return peaksPastThreshold(start, end, _pileHigh, _pileLow, _peakLength);
 }
 UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator start,
 					   std::vector<double>::const_iterator end,
@@ -423,7 +449,6 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
     }
     else
 	return peaks.size();
-
 }
 
 Float_t SignalProcessor::QDC(const std::vector<int> &signal, const UInt_t start, const UInt_t length) const
@@ -476,8 +501,8 @@ void SignalProcessor::setInter(const std::vector<Long_t> &in) const
 //signal is unmodified
 void SignalProcessor::setD_kl(Long_t* signal, const UInt_t length) const
 {
-    int k = (int) _decayTime;
-    int l = (int) (_flatMultiplier * 2 * _decayTime + k);
+    int k = (int) _riseTime;
+    int l = (int) (_flatMultiplier * _riseTime + k);
 
     //Cleanup memory
     delete [] d_kl;

@@ -21,24 +21,31 @@ class ConfigPopout {
     RQ_OBJECT("ConfigPopout");
 
 private:
+    static constexpr UInt_t numEntries = 11;
     TGTransientFrame *fMain;
-    TGCompositeFrame *f1, *f2;
-    TGGroupFrame *fTrap, *fZero;
+    TGCompositeFrame *f1,*f11, *f2;
+    TGGroupFrame *fTrap, *fZero, *fPileup, *fPeak;
     TGTextButton *bCancel, *bOK;
-    TGHorizontalFrame *fNumTrap[4], *fNumZero[4];
-    TGNumberEntry *fEntryTrap[4], *fEntryZero[4];
+    TGHorizontalFrame *fNumFrames[numEntries];
+    TGNumberEntry *fEntry[numEntries];
     SignalProcessor *signalP;
 
 #ifndef __CINT__
-    const char *fLabel[8] = {
-    "Rise time",
-    "Top",
+    const char *fLabel[numEntries] = {
+    "Rise time         ",
     "M",
-    "Peak Threshold",
-    "Offset",
-    "Scaling",
+    "Top Multiplier    ",
+
+    "Zero Offset",
     "Zero Threshold",
-    "Interpolation mult"};
+    "Interpolation Mult ",
+
+    "High Threshold   ",
+    "Low Threshold",
+    "Peak Length",
+
+    "Distance to sample",
+    "Points to average "};
 #endif
     
     

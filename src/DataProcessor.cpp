@@ -136,10 +136,10 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 
     //Get moving average of the second derivative (used for pileup ID)
     trapDeriv = signalProcessor->pileupTraceToThreshold(std::vector<Long_t>(trap.begin(), trap.begin() + _zero +
-									    metaData[f][4] - metaData[f][3]), -50000);
+									    metaData[f][4] - metaData[f][3]));
 
     //Look for pileup
-    if(signalProcessor->peaksPastThreshold(trapDeriv, 40000, 30) > 1)
+    if(signalProcessor->peaksPastThreshold(trapDeriv) > 1)
     {
 	std::cout << "Failed new method: " << event << std::endl;
 	_badEvents++;
@@ -149,7 +149,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 	//_Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
 	//			       metaData[f][4] - metaData[f][3]);
 	//Charge should be the value of the Trap function at the zero crossing
-	_Q = trap.at(trapDeriv.size());
+	_Q = trap.at(trapDeriv.size() + signalProcessor->getPeakDisplacement());
     
     //Do old QDC method
     //_QDC = signalProcessor->QDC(signal, _zero, metaData[f][4] - metaData[f][3]);
