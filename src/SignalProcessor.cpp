@@ -57,11 +57,12 @@ Int_t SignalProcessor::getThreshold() const{ return _threshold;}
 UInt_t SignalProcessor::getInterpMult() const{ return _interpMult;}
 Double_t SignalProcessor::getPeakThreshold() const{ return _peakThreshold;}
 
-void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t start,
-				 const UInt_t length) const
+void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t startIn,
+				 const UInt_t lengthIn) const
 {
-    if(start + length >= signal->size())
-	return;
+    UInt_t start = (startIn >= signal->Size()) ? signalSize() - 1 : startIn;
+    UInt_t length = (startIn + lengthIn >= signal->Size()) ? signalSize() - 1 : lengthIn;
+
     trapFilter(&signal->at(start), length);
 
 }
@@ -83,7 +84,7 @@ void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) cons
     }
 
     //replace signal
-    for(int n = 0; n <signalLength; n++)
+    for(int n = 0; n < signalLength; n++)
     {
 	signal[n] = modSig[n];
     }
@@ -200,7 +201,7 @@ std::vector<double> SignalProcessor::pileupTrace(const std::vector<Long_t> &sign
 
 std::vector<double> SignalProcessor::pileupTrace(const std::vector<Long_t> &signal, const UInt_t startIn, const UInt_t lengthIn) const
 {
-    std::vector<double> out;
+    /*std::vector<double> out;
     //validate parameters
     UInt_t start = (signal.size() > startIn) ? startIn : signal.size();
     UInt_t length = (signal.size() > start + lengthIn) ? lengthIn : signal.size() - start;
@@ -220,9 +221,59 @@ std::vector<double> SignalProcessor::pileupTrace(const std::vector<Long_t> &sign
     }
 
     //pushback zeros to finish padding
+    for(int i = start + length; i < signal.size(); i++) out.push_back(0.0);*/
+
+    return pileupTraceToThreshold(signal, startIn, lengthIn, 0);
+}
+
+//gets pileup trace
+std::vector<double> SignalProcessor::pileupTraceToThreshold(const std::vector<Long_t> &signal,
+							    const UInt_t startIn, const UInt_t lengthIn,
+							    const Long_t threshold) const
+{
+    std::vector<double> out;
+    bool reachedThreshold = false;
+    //Lambdas to easily compare. Takes sign of threshold into account
+    //true: in < -threshold || in > +threshold; always false if threshold = 0
+    auto compare = [=] (Long_t in){ return ( threshold < 0 && in < threshold ) ||
+				          ( threshold > 0 && in > threshold ); };
+    auto zeroFound = [=] (Long_t in){ return ( threshold < 0 && in > 0 ) ||
+				            ( threshold > 0 && in < 0 ); };
+
+    //validate parameters
+    UInt_t start = (signal.size() > startIn) ? startIn : signal.size();
+    UInt_t length = (signal.size() > start + lengthIn) ? lengthIn : signal.size() - start;
+    
+    //pushback zeros to start of signal
+    for(int i = 0; i < start; i++) out.push_back(0.0);
+
+    //Found signal so loop though and get curve (3 point moving average of
+    // second order centered second derivative, if points can't be used pad with zeros
+    for(int i = start; i < length + start; i++)
+    {
+	//if all the values needed are defined
+	if(i > 2)
+	    out.push_back( signal[i-2] - signal[i-1] - signal[i+1] + signal[i+2] );
+	else
+	    out.push_back(0.0);
+
+	//Determine if threshold was reached
+	reachedThreshold |= compare(out.back());
+	
+	//return if threshold was reached and we've reached the zero crossing
+	if(reachedThreshold && zeroFound(out.back()))
+	    return out;
+    }
+
+    //pushback zeros to finish padding
     for(int i = start + length; i < signal.size(); i++) out.push_back(0.0);
 
     return out;
+}
+std::vector<double> SignalProcessor::pileupTraceToThreshold(const std::vector<Long_t> &signal,
+					       const Long_t threshold) const
+{
+    return pileupTraceToThreshold(signal, 0, signal.size() - 2, threshold);
 }
 
 
@@ -296,7 +347,18 @@ Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start,
     
     return returnValue;
 }
-
+//Threshold low = 0 signifies that the function should to a straight count of the peaks
+UInt_t SignalProcessor::peaksPastThreshold(const std::vector<double> &signal, const Long_t threshHigh,
+					   const UInt_t distBetweenPeaks) const
+{
+    return peaksPastThreshold(signal.begin(), signal.end(), threshHigh, distBetweenPeaks);
+}
+UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator start,
+					   std::vector<double>::const_iterator end,
+					   const Long_t threshHigh, const UInt_t distBetweenPeaks) const
+{
+    return peaksPastThreshold(start, end, threshHigh, 0, distBetweenPeaks);
+}
 UInt_t SignalProcessor::peaksPastThreshold(const std::vector<double> &signal,
 					   const Long_t threshHigh, const Long_t threshLow,
 					   const UInt_t distBetweenPeaks) const
@@ -316,7 +378,7 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
     for(auto it = start; it < end; it++)
     {
 	//if reached top of trap, coresponding negative spike then return the number of peaks
-	if(*it < threshLow)
+	if(threshLow != 0 && *it < threshLow)
 	{
 	    //std::cout << "Quiting at: " << std::distance(start, it) << " with " <<
 	    //	peaks.size() << " peaks." << std::endl;
@@ -345,17 +407,22 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
 	}
     }
 
-    //Looped through all peaks, now return the number of peaks less than the min
-    UInt_t minLoc = std::distance(start, min);
-    UInt_t numPeaks = 0;
-    for(auto&& num:peaks)
-	if(num < minLoc)
-	{
-	    //std::cout << " Peak at: " << num;
-	    numPeaks++;
-	}
-    //std::cout <<  std::endl;
-    return numPeaks;
+    if(threshLow != 0)
+    {
+	//Looped through all peaks, now return the number of peaks less than the min
+	UInt_t minLoc = std::distance(start, min);
+	UInt_t numPeaks = 0;
+	for(auto&& num:peaks)
+	    if(num < minLoc)
+	    {
+		//std::cout << " Peak at: " << num;
+		numPeaks++;
+	    }
+	//std::cout <<  std::endl;
+	return numPeaks;
+    }
+    else
+	return peaks.size();
 
 }
 
@@ -473,5 +540,3 @@ Long_t SignalProcessor::s(Long_t* signal, const UInt_t n) const
     
     return ret;
 }
-
-

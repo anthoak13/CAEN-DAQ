@@ -92,6 +92,11 @@ public:
     std::vector<double> pileupTrace(const std::vector<Long_t> &signal) const;
     std::vector<double> pileupTrace(const std::vector<Long_t> &signal, const UInt_t start,
 				    const UInt_t length) const;
+    
+    std::vector<double> pileupTraceToThreshold(const std::vector<Long_t> &signal,
+					       const Long_t threshold) const;
+    std::vector<double> pileupTraceToThreshold(const std::vector<Long_t> &signal, const UInt_t start,
+					       const UInt_t length, const Long_t threshold) const;
 
     Long_t peakFind(const std::vector<Long_t>::iterator start,
 		    const std::vector<Long_t>::iterator end) const;
@@ -100,9 +105,14 @@ public:
 			      std::vector<double>::const_iterator end,
 			      const Long_t threshHigh, const Long_t threshLow,
 			      const UInt_t distBetweenPeaks) const;
-    
     UInt_t peaksPastThreshold(const std::vector<double> &signal, const Long_t threshHigh,
 			      const Long_t threshLow, const UInt_t distBetweenPeaks) const;
+    UInt_t peaksPastThreshold(std::vector<double>::const_iterator start,
+			      std::vector<double>::const_iterator end,
+			      const Long_t threshHigh,
+			      const UInt_t distBetweenPeaks) const;
+    UInt_t peaksPastThreshold(const std::vector<double> &signal, const Long_t threshHigh,
+			     const UInt_t distBetweenPeaks) const;
 
     ClassDef(SignalProcessor,0)
 };
