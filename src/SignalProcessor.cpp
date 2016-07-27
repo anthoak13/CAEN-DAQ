@@ -193,23 +193,38 @@ std::vector<double> SignalProcessor::secondDeriv(const std::vector<Long_t> &sign
     return out;
 }
 
-std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &signal) const
+std::vector<double> SignalProcessor::pileupTrace(const std::vector<Long_t> &signal) const
+{
+    return pileupTrace(signal, 0, signal.size());
+}
+
+std::vector<double> SignalProcessor::pileupTrace(const std::vector<Long_t> &signal, const UInt_t startIn, const UInt_t lengthIn) const
 {
     std::vector<double> out;
-    for(int i = 1; i < signal.size(); i++)
-	out.push_back(signal[i] - signal[i-1]);
+    //validate parameters
+    UInt_t start = (signal.size() > startIn) ? startIn : signal.size();
+    UInt_t length = (signal.size() > start + lengthIn) ? lengthIn : signal.size() - start;
+    
+    //pushback zeros to start of signal
+    for(int i = 0; i < start; i++) out.push_back(0.0);
+
+    //Found signal so loop though and get curve (3 point moving average of
+    // second order centered second derivative, if points can't be used pad with zeros
+    for(int i = start; i < length + start; i++)
+    {
+	//if all the values needed are defined
+	if(i > 2 && i < signal.size() - 2)
+	    out.push_back( (signal[i-2] - signal[i-1] - signal[i+1] + signal[i+2])/3.0 );
+	else
+	    out.push_back(0.0);
+    }
+
+    //pushback zeros to finish padding
+    for(int i = start + length; i < signal.size(); i++) out.push_back(0.0);
 
     return out;
 }
 
-std::vector<double> SignalProcessor::nonInterpSecondDeriv(const std::vector<Long_t> &signal) const
-{
-    std::vector<double> out;
-    for(int i = 1; i < signal.size()-1; i++)
-	out.push_back(signal[i-1] - 2*signal[i] + signal[i+1]);
-
-    return out;
-}
 
 //Uses the change in derivative at the beginning and end of the flat top to
 //find the peak value. If the derivative doesn't change as expected, ie it is exeptionally
@@ -356,6 +371,25 @@ Float_t SignalProcessor::QDC(const std::vector<int> &signal, const UInt_t start,
 }
 
 //*********Private functions ********************
+
+std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &signal) const
+{
+    std::vector<double> out;
+    for(int i = 1; i < signal.size(); i++)
+	out.push_back(signal[i] - signal[i-1]);
+
+    return out;
+}
+
+std::vector<double> SignalProcessor::nonInterpSecondDeriv(const std::vector<Long_t> &signal) const
+{
+    std::vector<double> out;
+    for(int i = 1; i < signal.size()-1; i++)
+	out.push_back(signal[i-1] - 2*signal[i] + signal[i+1]);
+
+    return out;
+}
+
 
 //Deletes the old interpolator and creates a new object to be used by other functions
 void SignalProcessor::setInter(const std::vector<Long_t> &in) const

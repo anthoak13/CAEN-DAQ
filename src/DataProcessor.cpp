@@ -135,10 +135,10 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     signalProcessor->trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
 
     //ID pileup using second deriv
-    trapDeriv = signalProcessor->secondDeriv((std::vector<Long_t>(trap.begin(), trap.begin() + _zero +
-								  metaData[f][4] - metaData[f][3])));
+    trapDeriv = signalProcessor->pileupTrace(std::vector<Long_t>(trap.begin(), trap.begin() + _zero +
+								  metaData[f][4] - metaData[f][3]));
 					     
-    if(signalProcessor->peaksPastThreshold(trapDeriv, 21000, -20000, 30) > 1)
+    if(signalProcessor->peaksPastThreshold(trapDeriv, 12000, -10000, 30) > 1)
     {
 	std::cout << "Failed new method: " << event << std::endl;
 	_badEvents++;
@@ -153,7 +153,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 
     //Get the timestamp
     _timestamp = header[5];
-    
+
     return 0;
 }
 

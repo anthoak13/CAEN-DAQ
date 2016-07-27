@@ -89,7 +89,12 @@ public:
 
     std::vector<double> secondDeriv(const std::vector<Long_t> &signal) const;
 
-    Long_t peakFind(const std::vector<Long_t>::iterator start, const std::vector<Long_t>::iterator end) const;
+    std::vector<double> pileupTrace(const std::vector<Long_t> &signal) const;
+    std::vector<double> pileupTrace(const std::vector<Long_t> &signal, const UInt_t start,
+				    const UInt_t length) const;
+
+    Long_t peakFind(const std::vector<Long_t>::iterator start,
+		    const std::vector<Long_t>::iterator end) const;
 
     UInt_t peaksPastThreshold(std::vector<double>::const_iterator start,
 			      std::vector<double>::const_iterator end,
