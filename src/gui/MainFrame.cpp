@@ -23,6 +23,7 @@
 #include "../Digitizer.h"
 
 #include "TH1.h"
+#include "TTimer.h"
 
 MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
 {
@@ -34,6 +35,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     headerLength = 6;
     dataP = new DataProcessor("", "", 0, 0, 0);
     fMain = new TGMainFrame(p, w, h);
+    fMain->SetCleanup(kDeepCleanup);
 
     //Make sure window closes
     fMain->Connect("CloseWindow()", "MainFrame", this, "closeWindow()");
@@ -128,7 +130,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fGDraw->AddFrame(fVertHist, fLDraw);
     fVertDraw->AddFrame(new TGLabel(fVertDraw, ""));
     fVertHist->AddFrame(new TGLabel(fVertHist, "hist #"));
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < kHistNumber; i++)
     {
 	fDrawSelect[i] = new TGCheckButton(fVertDraw, drawLabel[i]);
 	fSelectHist[i] = new TGComboBox(fVertHist);
@@ -303,7 +305,7 @@ void MainFrame::DoDraw()
     for(auto&& h:hist) delete h;
     hist.clear();
     //Loop through the options and create a canvas with all of the checked boxes
-    for(int i = 0; i < 6; i++)
+    for(int i = 0; i < kHistNumber; i++)
     {
 
 	if (fDrawSelect[i]->GetState() == kButtonDown)
@@ -341,7 +343,7 @@ void MainFrame::DoDraw()
 	    
 
 	    //Populate the histogram
-	    if(i < 6)
+	    if(i < kHistNumber)
 	    {
 		for(int j = 0; j < output.size(); j++)
 		    hist.back()->Fill(j, output[j]);

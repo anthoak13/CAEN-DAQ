@@ -17,7 +17,8 @@ WaveConfigPopout::WaveConfigPopout(const TGWindow *p, const TGWindow *main, Main
     fMain = new TGTransientFrame(p, main, 10, 10, kVerticalFrame);
     fMain->Connect("CloseWindow()", "WaveConfigPopout", this, "CloseWindow()");
     fMain->DontCallClose();
-
+    fMain->SetCleanup(kDeepCleanup);
+    
     //Layout hints
     fLHardware = new TGLayoutHints(kLHintsNormal, 2,2,3,0);
     f0 = new TGHorizontalFrame(fMain);

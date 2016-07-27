@@ -24,6 +24,7 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcesso
     fMain = new TGTransientFrame(p, main, 10, 10, kVerticalFrame);
     fMain->Connect("CloseWindow()", "ConfigPopout", this, "CloseWindow()");
     fMain->DontCallClose();
+    fMain->SetCleanup(kDeepCleanup);
 
     //Transient frame has a vertical frame by default (b/c default options)
     //Create 2 verical frames for groups and buttons

@@ -27,6 +27,7 @@ DAQPopout::DAQPopout(const TGWindow *p, const TGWindow *main,  MainFrame *frame,
     fMain = new TGTransientFrame(p, main, 10, 10, kHorizontalFrame);
     fMain->Connect("CloseWindow()", "DAQPopout", this, "CloseWindow()");
     fMain->DontCallClose();
+    fMain->SetCleanup(kDeepCleanup);
 
     //Create layouthints
     TGLayoutHints *fLHintsMain = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5);

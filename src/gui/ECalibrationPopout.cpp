@@ -22,6 +22,7 @@ ECalibrationPopout::ECalibrationPopout(const TGWindow *p, const TGWindow *w, Mai
     fMain = new TGTransientFrame(p, w, 10, 10, kVerticalFrame);
     fMain->Connect("CloseWindow()", "DAQPopout", this, "CloseWindow()");
     fMain->DontCallClose();
+    fMain->SetCleanup(kDeepCleanup);
 
     //Load in old calibration
     loadFile();

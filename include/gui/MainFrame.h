@@ -15,17 +15,29 @@
 
 
 #include "gui.h"
-#include "TTimer.h"
 #include <vector>
 
 class DataProcessor;
+class TTimer;
+
 //Definition of MainFrame
 class MainFrame {
 
     RQ_OBJECT("MainFrame");
 
 private:
-    DataProcessor *dataP;
+//constant declarations
+#ifndef __CINT__
+    static constexpr Int_t kHistNumber = 6;
+    const char *drawLabel[kHistNumber] = {
+    "signal",
+    "trap",
+    "deriv",
+    "cfd",
+    "raw",
+    "trap deriv"};
+#endif
+    
     TGMainFrame* fMain;
     TGCompositeFrame *fCTab1, *fCTab2;
     TGTextButton *bConfig, *bDraw;
@@ -37,8 +49,8 @@ private:
     TGLayoutHints *fLTab, *fHLabel, *fLDraw, *fLDrawButton;
     TGGroupFrame *fGDraw;
     TGVerticalFrame *fVertDraw, *fVertHist;
-    TGComboBox *fSelectHist[6];
-    TGCheckButton *fDrawSelect[6];
+    TGComboBox *fSelectHist[kHistNumber];
+    TGCheckButton *fDrawSelect[kHistNumber];
     TRootEmbeddedCanvas *fEmbedded, *fEmbedded2;
     TGComboBox *fComboDisp;
     TGLabel *fLabelDisp, *fLabelCh2;
@@ -50,25 +62,15 @@ private:
     TGMenuBar *fMenuBar;
     TGPopupMenu *fMenuFile, *fMenuAcq, *fMenuSpectra;
     TGLayoutHints *fLMenuBar, *fLMenuBarItem;
+    TGStatusBar *fStatusBar;
+
     
     TString inputTemplate, meta;
     UInt_t numCh, headerLength, interpMult;
 
+    DataProcessor *dataP;
     std::vector< TH1F* > hist;
-
     TTimer *timer;
-    TGStatusBar *fStatusBar;
-
-    
-#ifndef __CINT__
-    const char *drawLabel[6] = {
-    "signal",
-    "trap",
-    "deriv",
-    "cfd",
-    "raw",
-    "trap deriv"};
-#endif
 
     enum EMenIds {
     M_ACQ_START,
@@ -87,8 +89,10 @@ public:
 
     Double_t slope = 1;
     Double_t intercept = 0;
-    MainFrame(const TGWindow *,UInt_t , UInt_t);
+    
+    MainFrame(const TGWindow *p, UInt_t w, UInt_t h);
     virtual ~MainFrame();
+    
     void closeWindow();
     void DoConfig();
     void DoDraw();

@@ -19,7 +19,7 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     fMain = new TGTransientFrame(p, main, 10, 10, kVerticalFrame);
     fMain->Connect("CloseWindow()", "MetaConfigPopout", this, "CloseWindow()");
     fMain->DontCallClose();
-
+    fMain->SetCleanup(kDeepCleanup);
 
     //Create top frame and vertical frame for combo b0x
     fTop = new TGHorizontalFrame(fMain);
