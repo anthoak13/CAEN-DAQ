@@ -46,9 +46,9 @@ private:
 
     //Variables to be updated during processEvent
     std::vector<UShort_t> raw;
-    std::vector<int> signal;
-    std::vector<double> deriv;
-    std::vector<double> cfd;
+    std::vector<Int_t> signal;
+    std::vector<Double_t> deriv;
+    std::vector<Double_t> cfd;
     std::vector<Double_t> trapDeriv;
     std::vector<Long_t> trap;
     Float_t _baseline;
@@ -62,46 +62,48 @@ private:
     TBenchmark *bench;
     
 
-    bool loadFiles(TString, const UInt_t);
+    bool loadFiles(const TString fileTemplate, const UInt_t numFiles);
     void populateEventMap();
-    void nextEvent(FILE*, const UInt_t);
+    void nextEvent(FILE *file, const UInt_t eventSize) const;
 
-    void setHeaderLength(const UInt_t);
-    void loadMetaData(UInt_t);
-    void writeMetaData();
-    void setNumCh(const UInt_t);
+    void setHeaderLength(const UInt_t length);
+    void setNumCh(const UInt_t );
 
-    bool getBaseline(UShort_t *voltages, const int f, const Double_t tol);
+    void loadMetaData(const UInt_t numFiles);
+    void writeMetaData() const;
+
+    bool calcBaseline(UShort_t *voltages, const int f, const Double_t tol);
 
 public:
-    DataProcessor(TString, TString,  const UInt_t, const UInt_t, const UInt_t);
+    DataProcessor(const TString fileTemplate, const TString meta, const UInt_t numFiles,
+		  const UInt_t headerLength, const UInt_t interpMult);
     ~DataProcessor();
 
-    int processEvent(UInt_t, UInt_t);
+    Int_t processEvent(const UInt_t file, const UInt_t event);
 
-    int processFiles(bool = false);
+    Int_t processFiles(const bool verbose = false);
 
     void setMetaData(UInt_t ch, std::vector<Int_t> data) { metaData[ch] = data; };
-    std::vector<Int_t> getMetaData(UInt_t ch) { return metaData[ch]; };
-    UInt_t getNumEvents();
-    UInt_t getMaxEvents();
-    UInt_t getEventLength();
-    UInt_t getHeaderLength();
-    UInt_t getTimestamp();
-    UInt_t getNumCh();
-    SignalProcessor* getSignalP();
-    Float_t getQ();
-    Float_t getZero();
-    Float_t getBaseline();
-    Float_t getQDC();
-    UInt_t getBadEvents();
+    std::vector<Int_t> getMetaData(const UInt_t ch) const { return metaData[ch]; };
+    UInt_t getNumEvents() const;
+    UInt_t getMaxEvents() const;
+    UInt_t getEventLength() const;
+    UInt_t getHeaderLength() const;
+    UInt_t getTimestamp() const;
+    UInt_t getNumCh() const;
+    SignalProcessor* getSignalP() const;
+    Float_t getQ() const;
+    Float_t getZero() const;
+    Float_t getBaseline() const;
+    Float_t getQDC() const;
+    UInt_t getBadEvents() const;
     
-    const std::vector<Long_t> getSignal();
-    const std::vector<Long_t> getDeriv();
-    const std::vector<Long_t> getCFD();
-    const std::vector<Long_t> getTrap();
-    const std::vector<Long_t> getRaw();
-    const std::vector<Long_t> getTrapDeriv();
+    std::vector<Long_t> getSignal() const;
+    std::vector<Long_t> getDeriv() const;
+    std::vector<Long_t> getCFD() const;
+    std::vector<Long_t> getTrap() const;
+    std::vector<Long_t> getRaw() const;
+    std::vector<Long_t> getTrapDeriv() const;
     
     ClassDef(DataProcessor, 0)
 };

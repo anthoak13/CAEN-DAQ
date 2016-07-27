@@ -128,23 +128,23 @@ public:
     void setGlobalChan(const ChannelConfig &chIn);
     void addChannel(UInt_t chNum, const ChannelConfig &chIn);
 
-    Bool_t getBinary() { return _binary;}
-    Bool_t getHeader() { return _header;}
-    UShort_t getRecordLength() { return _recordLength;}
-    Bool_t getTestPattern() { return _testPattern;}
-    ChannelTrigger getExtTrig() { return _extTrig;}
-    UShort_t getMaxEvents() { return _maxEvents;}
-    UChar_t getPostTrig() { return _postTrig;}
-    Bool_t getTrigRising() { return _trigRising;}
-    UShort_t getInterrupt() { return _interrupt;}
-    Bool_t getNIM() { return _NIM;}
-    std::map<UInt_t, ChannelConfig> getChConfigs() { return chConfigs; }
-    ChannelConfig getChan(UInt_t chNum) { return chConfigs[chNum]; }
-    ChannelConfig getGlobalChan() { return globalChan; }
-    Bool_t getUSB() { return _USB;}
-    Bool_t getHexLocation() { return _hexLocation;} 
-    UInt_t getDigitizerLoc(int loc) { return _digitizerLoc[loc]; }
-    TString getGnuPlotPath() { return gnuPlotPath; }
+    Bool_t getBinary() const { return _binary;}
+    Bool_t getHeader() const { return _header;}
+    UShort_t getRecordLength() const { return _recordLength;}
+    Bool_t getTestPattern() const { return _testPattern;}
+    ChannelTrigger getExtTrig() const { return _extTrig;}
+    UShort_t getMaxEvents() const { return _maxEvents;}
+    UChar_t getPostTrig() const { return _postTrig;}
+    Bool_t getTrigRising() const { return _trigRising;}
+    UShort_t getInterrupt() const { return _interrupt;}
+    Bool_t getNIM() const { return _NIM;}
+    std::map<UInt_t, ChannelConfig> getChConfigs() const { return chConfigs; }
+    ChannelConfig getChan(const UInt_t chNum)  { return chConfigs[chNum]; }
+    ChannelConfig getGlobalChan() const { return globalChan; }
+    Bool_t getUSB() const { return _USB;}
+    Bool_t getHexLocation() const { return _hexLocation;} 
+    UInt_t getDigitizerLoc(int loc) const { return _digitizerLoc[loc]; }
+    TString getGnuPlotPath() const { return gnuPlotPath; }
 
     ClassDef(WavedumpConfig, 0)
 

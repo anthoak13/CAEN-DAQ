@@ -17,7 +17,7 @@
 #include "TString.h"
 
 
-CAEN_DGTZ_ErrorCode getDigitizerInfo(CAEN_DGTZ_BoardInfo_t *info, WavedumpConfig config)
+CAEN_DGTZ_ErrorCode getDigitizerInfo(CAEN_DGTZ_BoardInfo_t *info, const WavedumpConfig &config) 
 {
     CAEN_DGTZ_ErrorCode ret;
     int handle;
@@ -36,7 +36,7 @@ CAEN_DGTZ_ErrorCode getDigitizerInfo(CAEN_DGTZ_BoardInfo_t *info, WavedumpConfig
     return ret;
 }
 
-TString getCAENError(CAEN_DGTZ_ErrorCode error)
+TString getCAENError(const CAEN_DGTZ_ErrorCode error) 
 {
     switch (error) {
 

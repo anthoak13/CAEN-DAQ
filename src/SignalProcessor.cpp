@@ -48,14 +48,17 @@ SignalProcessor::~SignalProcessor()
 }
 
 //Public Functions
-Int_t  SignalProcessor::getDecayTime() { return _decayTime;}
-Double_t SignalProcessor::getFlatMult() { return _flatMultiplier;}
-Double_t SignalProcessor::getM() {return  _M;}
-Int_t SignalProcessor::getOffset() { return _offset;}
-Double_t SignalProcessor::getScaling() { return _scaling;}
-Int_t SignalProcessor::getThreshold() { return _threshold;}
+Int_t  SignalProcessor::getDecayTime() const{ return _decayTime;}
+Double_t SignalProcessor::getFlatMult() const{ return _flatMultiplier;}
+Double_t SignalProcessor::getM() const{return  _M;}
+Int_t SignalProcessor::getOffset() const{ return _offset;}
+Double_t SignalProcessor::getScaling() const{ return _scaling;}
+Int_t SignalProcessor::getThreshold() const{ return _threshold;}
+UInt_t SignalProcessor::getInterpMult() const{ return _interpMult;}
+Double_t SignalProcessor::getPeakThreshold() const{ return _peakThreshold;}
 
-void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t start, const UInt_t length)
+void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t start,
+				 const UInt_t length) const
 {
     if(start + length >= signal->size())
 	return;
@@ -63,7 +66,7 @@ void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t start
 
 }
 
-void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength)
+void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) const
 {
     //Loop through the signal to convolve
     Long_t* modSig = new Long_t[signalLength];
@@ -88,38 +91,43 @@ void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength)
     delete [] modSig;
 }
 
-
-void SignalProcessor::CFD(std::vector<double>* signal, const UInt_t start, const UInt_t length,
-			  const int shift)
+//Outputs a vector the same size as inputed signal
+ std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal, const UInt_t start,
+					    const UInt_t length, const Int_t shift) const
 {
-    //invert signal and shift
-    double* signalInv = new double[length];
+    //create output and zero fill
+    std::vector<Double_t> out;
+    out.resize(signal.size(), 0);
+
+    //invert the signal
     for(int i = shift; i < length; i++)
     {
-	signalInv[i- shift] = -signal->at(i+ start);
+        out[i- shift] = -signal[i+ start];
     }
     
     for(int i = 0; i < (length-shift); i++)
-	signal->at(i+start) += signalInv[i];
+        out[i] += signal[i+start];
 
-    delete [] signalInv;
+    return out;
+    
 }
-void SignalProcessor::CFD(std::vector<double>* signal, const int shift)
+std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal, const Int_t shift) const
 {
-    CFD(signal, 0, signal->size(), shift);
+    return CFD(signal, 0, signal.size(), shift);
 }
-void SignalProcessor::CFD(std::vector<double>* signal)
+std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal) const
 {
-    CFD(signal, 0, signal->size(), _offset);
+    return CFD(signal, 0, signal.size(), _offset);
 }
 
-int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal)
+int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal) const
 {
     return SignalProcessor::zeroAfterThreshold(signal, _threshold);
 }
+
 //Gets the next zero crossing after the signal reaches a min or max of threshold (determined by sgn of threshold)
 //return 0 if no zero is found
-int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const int threshold)
+int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const int threshold) const
 {
     auto it = signal.begin();
     if(threshold < 0)
@@ -142,11 +150,11 @@ int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const
     
     return std::distance(signal.begin(), it)/_interpMult;
 }
-std::vector<double> SignalProcessor::deriv(const std::vector<Int_t> &signal)
+std::vector<double> SignalProcessor::deriv(const std::vector<Int_t> &signal) const
 {
     return deriv(std::vector<Long_t>(signal.begin(), signal.end()));
 }
-std::vector<double> SignalProcessor::deriv(const std::vector<Long_t> &signal)
+std::vector<double> SignalProcessor::deriv(const std::vector<Long_t> &signal) const
 {
     if(_interpMult < 2)
 	return nonInterpDeriv(signal);
@@ -166,7 +174,7 @@ std::vector<double> SignalProcessor::deriv(const std::vector<Long_t> &signal)
     return out;
 }
 
-std::vector<double> SignalProcessor::secondDeriv(const std::vector<Long_t> &signal)
+std::vector<double> SignalProcessor::secondDeriv(const std::vector<Long_t> &signal) const
 {
      if(_interpMult < 2)
 	return nonInterpSecondDeriv(signal);
@@ -185,7 +193,7 @@ std::vector<double> SignalProcessor::secondDeriv(const std::vector<Long_t> &sign
     return out;
 }
 
-std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &signal)
+std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &signal) const
 {
     std::vector<double> out;
     for(int i = 1; i < signal.size(); i++)
@@ -194,7 +202,7 @@ std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &s
     return out;
 }
 
-std::vector<double> SignalProcessor::nonInterpSecondDeriv(const std::vector<Long_t> &signal)
+std::vector<double> SignalProcessor::nonInterpSecondDeriv(const std::vector<Long_t> &signal) const
 {
     std::vector<double> out;
     for(int i = 1; i < signal.size()-1; i++)
@@ -206,7 +214,8 @@ std::vector<double> SignalProcessor::nonInterpSecondDeriv(const std::vector<Long
 //Uses the change in derivative at the beginning and end of the flat top to
 //find the peak value. If the derivative doesn't change as expected, ie it is exeptionally
 //smooth, it returns a simple maximum of the trapazoid
-Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start, const std::vector<Long_t>::iterator end)
+Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start,
+				 const std::vector<Long_t>::iterator end) const
 {
     const double thresh = _peakThreshold;
     std::vector<Long_t>::iterator peak1;
@@ -221,29 +230,29 @@ Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start, cons
     if(posDeriv)
     {
 	//find 1st peak
-	while(*(it + 1) > *it && it != end) { it++; }
+	while(*(it + 1) >= *it && it != end) { it++; }
 	peak1 = it;
 
 	//find mid
-	while(*(it + 1) < *it && it != end) { it++; }
+	while(*(it + 1) <= *it && it != end) { it++; }
 	mid = it;
 
 	//Find second max
-	while(*(it + 1) > *it && it != end) { it++; }
+	while(*(it + 1) >= *it && it != end) { it++; }
 	peak2 = it;
     }
     else
     {
 	//find 1st peak
-	while(*(it + 1) > *it && it != end) { it++; }
+	while(*(it + 1) >= *it && it != end) { it++; }
 	peak1 = it;
 
 	//find mid
-	while(*(it + 1) < *it && it != end) { it++; }
+	while(*(it + 1) <= *it && it != end) { it++; }
 	mid = it;
 
 	//Find second max
-	while(*(it + 1) > *it && it != end) { it++; }
+	while(*(it + 1) >= *it && it != end) { it++; }
 	peak2 = it;
     }
 
@@ -262,19 +271,12 @@ Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start, cons
 	    returnValue = TMath::Mean(peak1, peak2);
 	else
 	    returnValue = *peak1;
-    
-    //XOR midValue and secondValue -> pileup
-    else if(midValid != secondValid)
-    {
-	returnValue = -1; //Detect pileup
-	
-    }
-    else
+    else 
 	returnValue = *(TMath::LocMax(start, end));
 
 #ifdef DEBUG
     //  if(returnValue < 0)
-//	std::cout << "Peak 1: " << *peak1 << " mid: " << *mid << " peak2: " << *peak2 << " mean: " << returnValue << std::endl;
+	std::cout << "Peak 1: " << *peak1 << " mid: " << *mid << " peak2: " << *peak2 << " mean: " << returnValue << std::endl;
 #endif
     
     return returnValue;
@@ -282,14 +284,14 @@ Long_t SignalProcessor::peakFind(const std::vector<Long_t>::iterator start, cons
 
 UInt_t SignalProcessor::peaksPastThreshold(const std::vector<double> &signal,
 					   const Long_t threshHigh, const Long_t threshLow,
-					   const UInt_t distBetweenPeaks)
+					   const UInt_t distBetweenPeaks) const
 {
     return peaksPastThreshold(signal.begin(), signal.end(), threshHigh, threshLow, distBetweenPeaks);
 }
 UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator start,
 					   std::vector<double>::const_iterator end,
 					   const Long_t threshHigh, const Long_t threshLow,
-					   const UInt_t distBetweenPeaks)
+					   const UInt_t distBetweenPeaks) const
 {
     std::vector<UInt_t> peaks;
     auto min = start;
@@ -311,6 +313,8 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
 	    //if this should be counted as a new peak
 	    if(std::distance(lastPeak, it) > distBetweenPeaks || lastPeak == start)
 		peaks.push_back(std::distance(start, it));
+
+	    //std::cout << "Peak at: " << std::distance(start, it) << " " << std::distance(lastPeak, it) << " from last."  << std:: endl;
 	    
 	    //Loop until back under the threshold
 	    while(*it > threshHigh  && it != end) it++;
@@ -329,7 +333,7 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
     //Looped through all peaks, now return the number of peaks less than the min
     UInt_t minLoc = std::distance(start, min);
     UInt_t numPeaks = 0;
-    for(auto &&num:peaks)
+    for(auto&& num:peaks)
 	if(num < minLoc)
 	{
 	    //std::cout << " Peak at: " << num;
@@ -340,11 +344,21 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
 
 }
 
+Float_t SignalProcessor::QDC(const std::vector<int> &signal, const UInt_t start, const UInt_t length) const
+{
+    int Q = 0;
+    for(int i = 0; i < length; i++)
+    {
+	Q += signal[start+i];
+    }
+    return ((Float_t)Q)/length;
+    
+}
 
 //*********Private functions ********************
 
 //Deletes the old interpolator and creates a new object to be used by other functions
-void SignalProcessor::setInter(const std::vector<Long_t> &in)
+void SignalProcessor::setInter(const std::vector<Long_t> &in) const
 {
     //create x array
     std::vector<double> x;
@@ -359,7 +373,7 @@ void SignalProcessor::setInter(const std::vector<Long_t> &in)
 }
 
 //signal is unmodified
-void SignalProcessor::setD_kl(Long_t* signal, const UInt_t length)
+void SignalProcessor::setD_kl(Long_t* signal, const UInt_t length) const
 {
     int k = (int) _decayTime;
     int l = (int) (_flatMultiplier * 2 * _decayTime + k);
@@ -385,13 +399,13 @@ void SignalProcessor::setD_kl(Long_t* signal, const UInt_t length)
 }
 
 //signal is unmodified, assumes d_kl is propely set
-void SignalProcessor::p(Long_t* signal, const UInt_t n)
+void SignalProcessor::p(Long_t* signal, const UInt_t n) const
 {
     prepP(n);
     setP(signal, n-1);
 }
 
-Long_t SignalProcessor::setP(Long_t* signal, const UInt_t n)
+Long_t SignalProcessor::setP(Long_t* signal, const UInt_t n) const
 {
     //Basecase
     if( n < 1)
@@ -404,7 +418,7 @@ Long_t SignalProcessor::setP(Long_t* signal, const UInt_t n)
 }
 
 
-void SignalProcessor::prepP(const UInt_t n)
+void SignalProcessor::prepP(const UInt_t n) const
 {
     delete [] _p;
     _p = new Long_t[n];
@@ -412,7 +426,7 @@ void SignalProcessor::prepP(const UInt_t n)
 
 
 //modifies signal inplace, assumes d_kl and p are properly set
-Long_t SignalProcessor::s(Long_t* signal, const UInt_t n)
+Long_t SignalProcessor::s(Long_t* signal, const UInt_t n) const
 {
     Long_t ret = (_p[n] + d_kl[n] * _M);
 
@@ -426,13 +440,4 @@ Long_t SignalProcessor::s(Long_t* signal, const UInt_t n)
     return ret;
 }
 
-Float_t SignalProcessor::QDC(const std::vector<int> &signal, const UInt_t start, const UInt_t length)
-{
-    int Q = 0;
-    for(int i = 0; i < length; i++)
-    {
-	Q += signal[start+i];
-    }
-    return ((Float_t)Q)/length;
-    
-}
+

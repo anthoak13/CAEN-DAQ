@@ -19,7 +19,8 @@
 
 ClassImp(DataProcessor);
 
-DataProcessor::DataProcessor(TString fileTemplate, TString meta, const UInt_t numFiles, const UInt_t headerLength, const UInt_t interpMult)
+DataProcessor::DataProcessor(const TString fileTemplate, const TString meta, const UInt_t numFiles,
+			     const UInt_t headerLength, const UInt_t interpMult)
 {
     //Create a new signalProcessor with the default values
     signalProcessor = new SignalProcessor();
@@ -64,7 +65,7 @@ DataProcessor::~DataProcessor()
 }
 //return 1: event too large
 //return 0: success 
-int DataProcessor::processEvent(UInt_t f, UInt_t event)
+Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 {
     //make sure the event is valid
     std::cout << "event: " << event << std::endl;
@@ -92,8 +93,8 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     fread(&header, 4, getHeaderLength(), files[f]);
     fread(&voltages, 2, getEventLength(), files[f]);
 
-    //Do baseline correction
-    bool baseValid = getBaseline(voltages, f, 0.01);
+    //Get baseline correction
+    bool baseValid = calcBaseline(voltages, f, 0.01);
 
     
     //Populate signal
@@ -118,8 +119,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
     if(baseValid)
     {
 	deriv = signalProcessor->deriv(signal);
-	cfd = deriv;
-	signalProcessor->CFD(&cfd);
+	cfd   =	signalProcessor->CFD(deriv);
 	_zero = signalProcessor->zeroAfterThreshold(cfd);
 
 	//make sure the zero is valid
@@ -159,7 +159,7 @@ int DataProcessor::processEvent(UInt_t f, UInt_t event)
 
 //return 0: sucess
 //return 1: trees wrong size
-int DataProcessor::processFiles(bool verbose)
+Int_t DataProcessor::processFiles(const bool verbose)
 {
     //Variables to store channel data
     Float_t Q[_numCh];
@@ -295,21 +295,21 @@ int DataProcessor::processFiles(bool verbose)
     return 0;
 }
 
-UInt_t DataProcessor::getNumEvents() { return eventMap.size(); }
-UInt_t DataProcessor::getMaxEvents() { return _max; }
-UInt_t DataProcessor::getEventLength() { return _eventLength; }
-UInt_t DataProcessor::getHeaderLength() { return _headerLength; }
-UInt_t DataProcessor::getTimestamp() { return _timestamp; }
-UInt_t DataProcessor::getNumCh() { return files.size(); }
-Float_t DataProcessor::getQDC() { return _QDC; }
-Float_t DataProcessor::getQ() { return _Q; }
-Float_t DataProcessor::getZero() { return _zero; }
-Float_t DataProcessor::getBaseline() { return _baseline; }
-UInt_t DataProcessor::getBadEvents() { return _badEvents; }
-SignalProcessor* DataProcessor::getSignalP() { return signalProcessor; }
+UInt_t DataProcessor::getNumEvents() const { return eventMap.size(); }
+UInt_t DataProcessor::getMaxEvents() const { return _max; }
+UInt_t DataProcessor::getEventLength() const { return _eventLength; }
+UInt_t DataProcessor::getHeaderLength() const { return _headerLength; }
+UInt_t DataProcessor::getTimestamp() const { return _timestamp; }
+UInt_t DataProcessor::getNumCh() const { return files.size(); }
+Float_t DataProcessor::getQDC() const { return _QDC; }
+Float_t DataProcessor::getQ() const { return _Q; }
+Float_t DataProcessor::getZero() const { return _zero; }
+Float_t DataProcessor::getBaseline() const { return _baseline; }
+UInt_t DataProcessor::getBadEvents() const { return _badEvents; }
+SignalProcessor* DataProcessor::getSignalP() const { return signalProcessor; }
 
-const std::vector<Long_t> DataProcessor::getTrap() { return trap; }
-const std::vector<Long_t> DataProcessor::getSignal()
+ std::vector<Long_t> DataProcessor::getTrap() const { return trap; }
+ std::vector<Long_t> DataProcessor::getSignal() const
 {
     std::vector<Long_t> out;
     out.reserve(signal.size());
@@ -318,28 +318,28 @@ const std::vector<Long_t> DataProcessor::getSignal()
     
     return out;
 }
-const std::vector<Long_t> DataProcessor::getDeriv()
+ std::vector<Long_t> DataProcessor::getDeriv() const
 {
     std::vector<Long_t> out;
     for(auto it = deriv.begin(); it < deriv.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
-const std::vector<Long_t> DataProcessor::getTrapDeriv()
+ std::vector<Long_t> DataProcessor::getTrapDeriv() const
 {
     std::vector<Long_t> out;
     for(auto it = trapDeriv.begin(); it < trapDeriv.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
-const std::vector<Long_t> DataProcessor::getCFD()
+ std::vector<Long_t> DataProcessor::getCFD() const
 {
     std::vector<Long_t> out;
     for(auto it = cfd.begin(); it < cfd.end(); it+= signalProcessor->getInterpMult())
 	out.push_back(*it);
     return out;
 }
-const std::vector<Long_t> DataProcessor::getRaw()
+ std::vector<Long_t> DataProcessor::getRaw() const
 {
     std::vector<Long_t> out;
     for(auto &&num:raw)
@@ -392,7 +392,7 @@ void DataProcessor::populateEventMap()
 
 //Finds the next event in file using the supplied event size and looking for
 //The 1st element of the header
-void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize)
+void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize) const
 {
     //Move forward an event
     fseek(file, eventSize, SEEK_CUR);
@@ -412,7 +412,7 @@ void DataProcessor::nextEvent(FILE* file, const UInt_t eventSize)
 }
 
 
-void DataProcessor::loadMetaData(UInt_t numFiles)
+void DataProcessor::loadMetaData(const UInt_t numFiles)
 {
     //CLear out the old meta data
     metaData.clear();
@@ -463,7 +463,7 @@ void DataProcessor::loadMetaData(UInt_t numFiles)
     }
 }
 
-void DataProcessor::writeMetaData()
+void DataProcessor::writeMetaData() const
 {
 #ifdef DEBUG
     std::cout << "Writing meta: " << _meta << std::endl;
@@ -487,7 +487,7 @@ void DataProcessor::writeMetaData()
     file.close();
 }
 
-bool DataProcessor::getBaseline(UShort_t *sig, const int f, const Double_t tol)
+bool DataProcessor::calcBaseline(UShort_t *sig, const int f, const Double_t tol)
 {
     //Do baseline correction
     for(int i = metaData[f][1]; i < metaData[f][2]; i++)
