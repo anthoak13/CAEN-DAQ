@@ -57,7 +57,7 @@ private:
     Long_t setP(Long_t *signal, const UInt_t) const;
     void prepP(const UInt_t) const;
     void p(Long_t *signal, const UInt_t) const;
-    Long_t s(Long_t *signal, const UInt_t) const;
+    Long_t s(const UInt_t) const;
     
     std::vector<double> nonInterpDeriv(const std::vector<Long_t> &signal) const;
     std::vector<double> nonInterpSecondDeriv(const std::vector<Long_t> &signal) const;

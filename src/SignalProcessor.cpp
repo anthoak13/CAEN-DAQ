@@ -89,27 +89,15 @@ void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t start
 
 void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) const
 {
-    //Loop through the signal to convolve
-    Long_t* modSig = new Long_t[signalLength];
-
     //Get arrays for processing signal
     setD_kl(signal, signalLength);
     p(signal, signalLength);
     
-
     //get the modified signal;
     for(int n = 0; n < signalLength; n++)
     {
-	modSig[n] = s(signal, n);
+	signal[n] = signal[n-1] + _p[n] + d_kl[n] * _M;
     }
-
-    //replace signal
-    for(int n = 0; n < signalLength; n++)
-    {
-	signal[n] = modSig[n];
-    }
-    
-    delete [] modSig;
 }
 
 //Outputs a vector the same size as inputed signal
@@ -561,7 +549,7 @@ void SignalProcessor::prepP(const UInt_t n) const
 
 
 //modifies signal inplace, assumes d_kl and p are properly set
-Long_t SignalProcessor::s(Long_t* signal, const UInt_t n) const
+Long_t SignalProcessor::s(const UInt_t n) const
 {
     Long_t ret = (_p[n] + d_kl[n] * _M);
 
@@ -570,7 +558,7 @@ Long_t SignalProcessor::s(Long_t* signal, const UInt_t n) const
 	return ret;
 
     //Not base
-    ret += s(signal, n-1);
+    ret += s(n-1);
     
     return ret;
 }
