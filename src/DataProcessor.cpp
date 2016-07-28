@@ -60,7 +60,7 @@ DataProcessor::~DataProcessor()
     }
 #endif
     writeMetaData();
-
+    
     delete signalProcessor;
 }
 //return 1: event too large
@@ -234,7 +234,7 @@ Int_t DataProcessor::processFiles(const bool verbose, const TString fileName)
 	
 	for(int event = 0; event < eventMap.size(); event++)
 	{
-	    if(verbose && event%50000 == 0)
+	    if(verbose && event%10000 == 0)
 		std::cout << "Processing event: " << event << std::endl;
 #ifdef DEBUG
 	    bench->Start("Process");

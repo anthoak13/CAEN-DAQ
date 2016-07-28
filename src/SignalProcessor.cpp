@@ -18,8 +18,10 @@
 //include files
 #include "SignalProcessor.h"
 #include "Math/Interpolator.h"
+#include "TString.h"
 #include "TMath.h"
 #include <iostream>
+#include <fstream>
 
 ClassImp(SignalProcessor);
 //Constructor
@@ -456,6 +458,96 @@ Float_t SignalProcessor::QDC(const std::vector<int> &signal, const UInt_t start,
 	Q += signal[start+i];
     }
     return ((Float_t)Q)/length;
+    
+}
+
+void SignalProcessor::write(TString fileName) const
+{
+    std::ofstream file;
+    file.open(fileName);
+
+    if(!file.is_open())
+	throw std::runtime_error(std::string("Can't open " + fileName));
+
+    file << "# comma deliminated file containing parameters" << std::endl;
+    file << "# RiseTime        ,M            ,TopMult" << std::endl;
+    file << "# ZeroOffset      ,ZeroThreshold,InterpMult" << std::endl;
+    file << "# HighThreshold   ,LowThreshold ,PeakLength" << std::endl;
+    file << "# DistanceToSample,PointsToAvg  ,PeakThreshold" << std::endl << std::endl;
+
+    file << _riseTime << "," << _M << "," << _flatMultiplier << std::endl;
+    file << _zeroOffset << "," << _zeroThreshold << "," << _interpMult << std::endl;
+    file << _pileHigh << "," << _pileLow << "," << _peakLength << std::endl;
+    file << _peakDisplacement << "," << _pointsToAverage << "," << _peakThreshold << std::endl;
+
+    file.close();
+
+}
+
+void SignalProcessor::load(TString fileName)
+{
+    
+    //Load file
+    std::ifstream file;
+    std::vector<Double_t> in;
+    file.open(fileName);
+    if(!file.is_open())
+    {
+	std::cout << "Can't open " << fileName << " creating default file" << std:: endl;
+	write(fileName);
+	return;
+    }
+    
+    //If the file exists read its content 
+    while(!file.eof())
+    {
+	TString temp;
+	temp.ReadToken(file);
+	
+	//If the line should be skipped
+	if(temp.Contains("#"))
+	{
+	    temp.ReadLine(file);
+	    continue;
+	}
+	
+	//get the meta data
+	TString delim = ",";
+	TString token;
+	Ssiz_t from = 0;
+
+	while(temp.Tokenize(token, from, delim))
+	{
+	    in.push_back(token.Atof());
+	}
+    }
+
+    //Make sure signal is write
+    if(in.size() != 12)
+	throw std::runtime_error(std::string(fileName + " is formatted incorrectly!"));
+
+    
+    //Update signalP
+    _riseTime = in.at(0);
+    _M = in.at(1);
+    _flatMultiplier = in.at(2);
+
+    _zeroOffset = in.at(3);
+    _zeroThreshold = in.at(4);
+    _interpMult = in.at(5);
+
+    _pileHigh = in.at(6);
+    _pileLow = in.at(7);
+    _peakLength = in.at(8);
+    
+    _pointsToAverage = in.at(9);
+    _peakDisplacement = in.at(10);
+    _peakThreshold = in.at(11);
+
+    std::cout <<"Loaded file";
+    
+
+    file.close();
     
 }
 

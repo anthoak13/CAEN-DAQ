@@ -140,6 +140,10 @@ public:
 
     UInt_t peaksPastThreshold(const std::vector<double> &signal) const;
 
+    //File io
+    void write(TString fileName) const;
+    void load(TString fileName);
+
     ClassDef(SignalProcessor,0)
 };
 

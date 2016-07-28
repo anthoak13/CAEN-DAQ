@@ -34,6 +34,9 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     numCh = 16;
     headerLength = 6;
     dataP = new DataProcessor("", "", 0, 0);
+    dataP->getSignalP()->load("signal.config");
+
+    //TODO:Load in old signalProcessor data
     fMain = new TGMainFrame(p, w, h);
     fMain->SetCleanup(kDeepCleanup);
 
@@ -269,6 +272,7 @@ MainFrame::~MainFrame()
 {
     std::cout << "Destroying Main" << std::endl;
     fMain->Cleanup();
+    dataP->getSignalP()->write("signal.config");
     delete dataP;
     delete fMain;
 }
@@ -447,9 +451,11 @@ void MainFrame::DoAcquisitionClosed()
 
 void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t numCh, UInt_t headerLength)
 {
+    dataP->getSignalP()->write("signal.config");
     delete dataP;
     try {
 	dataP = new DataProcessor(templateIn, meta, numCh, headerLength);
+	dataP->getSignalP()->load("signal.config");
     } catch(std::exception &e) {
 	std::cout << e.what() << std::endl;
 	dataP = new DataProcessor("", "", 0, 0);

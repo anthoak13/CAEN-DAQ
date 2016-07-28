@@ -22,13 +22,13 @@
 
 void WalkData()
 {
-    const TString dir = "/home/adam/data/CoHPGe/";
+    const TString dir = "/home/adam/data/CoHPGe2/";
     //Create DataP
     DataProcessor *dataP = new DataProcessor("data_in%i", "meta.config", 1, 6);
     SignalProcessor* signalP = dataP->getSignalP();
 
-    UInt_t riseTime = 3650;
-    Int_t peakDisplacement = -2;
+    UInt_t riseTime = 3700;
+    Int_t peakDisplacement = 0;
     std::ofstream outFile;
     outFile.open(TString(dir + "Efficiency.txt"));
     if(!outFile.is_open())
@@ -40,10 +40,10 @@ void WalkData()
 	TString fileName = Form(dir + "tree_%i_%i.root", riseTime, peakDisplacement);
 	//update signal P
 	delete signalP;
-	signalP = new SignalProcessor(riseTime, riseTime, 1.5,
-				      6, -20, 1,
-				      1000, 0, 10,
-				      peakDisplacement, 0, -1000);
+	signalP = new SignalProcessor(riseTime, riseTime, 0.05,
+				      60, -5, 1,
+				      40000, -60000, 30,
+				      peakDisplacement, 0, -40000);
 	std::cout << "Processing " << fileName << "... " <<std::endl;
 	dataP->processFiles(true, fileName);
 
@@ -76,9 +76,9 @@ void WalkData()
 	}
 
 	//Fit with a gausian
-        //auto offset = 7000*(riseTime - 11);
-	TF1 *gaus = new TF1("gaus", "gaus", 1800000000,
-			                    1815000000);
+        auto offset = 800000*(riseTime - 3700);
+	TF1 *gaus = new TF1("gaus", "gaus", 1730000000 + offset,
+			                    1745000000 + offset);
 	h1.Fit(gaus,"R same quite");
 
 	//write to file
@@ -93,15 +93,12 @@ void WalkData()
 	histFile->Close();
 
 	std::cout << "Done" << std::endl;
-	//Update thing
-	if(peakDisplacement < 0)
-	    peakDisplacement = 0;
-	else if(peakDisplacement < 100)
-	    peakDisplacement += 50;
+	if(peakDisplacement < 100)
+	    peakDisplacement += 20;
 	else
 	{
-	    peakDisplacement = -2;
-	    riseTime += 50;
+	    peakDisplacement = 0;
+	    riseTime += 10;
 	}
 
     }
