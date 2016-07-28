@@ -13,9 +13,100 @@
 //script for trying PSD
 #include "TApplication.h"
 #include "TROOT.h"
+#include "TH1.h"
+#include "TF1.h"
+#include "DataProcessor.h"
+#include "SignalProcessor.h"
+#include <fstream>
+#include <iostream>
 
-void test()
+void WalkData()
 {
+    const TString dir = "/home/adam/data/CoHPGe/";
+    //Create DataP
+    DataProcessor *dataP = new DataProcessor("data_in%i", "meta.config", 1, 6);
+    SignalProcessor* signalP = dataP->getSignalP();
+
+    UInt_t riseTime = 3650;
+    Int_t peakDisplacement = -2;
+    std::ofstream outFile;
+    outFile.open(TString(dir + "Efficiency.txt"));
+    if(!outFile.is_open())
+	return;
+    //loop though and create trees of data
+    bool test = true;
+    while(riseTime <= 3800 && peakDisplacement <=100 && test)
+    {
+	TString fileName = Form(dir + "tree_%i_%i.root", riseTime, peakDisplacement);
+	//update signal P
+	delete signalP;
+	signalP = new SignalProcessor(riseTime, riseTime, 1.5,
+				      6, -20, 1,
+				      1000, 0, 10,
+				      peakDisplacement, 0, -1000);
+	std::cout << "Processing " << fileName << "... " <<std::endl;
+	dataP->processFiles(true, fileName);
+
+	//Create histogram
+	std::cout << "Creating hist" << std::endl;
+	TH1F h1;
+	TFile *file = new TFile( fileName, "read");
+	TFile *histFile = new TFile( Form(dir + "HIST_%i_%i.root", riseTime, peakDisplacement), "recreate");
+	TTree *tree =  NULL;
+	file->GetObject("macro_tree", tree);
+
+	if(tree == NULL)
+	{
+	    std::cout << "Tree not found" << std::endl;
+	    return;
+	}
+	UInt_t numEntries =  tree->GetEntries();
+	Float_t temp;    
+	tree->SetBranchAddress("Q_0", &temp);
+    
+	//create hist and fill it
+	h1 = TH1F("htemp", "", 1000,
+		  1400000000,
+		  2200000000);
+	
+	for(int i = 0; i < numEntries; i++)
+	{
+	    tree->GetEntry(i);
+		h1.Fill(temp);
+	}
+
+	//Fit with a gausian
+        //auto offset = 7000*(riseTime - 11);
+	TF1 *gaus = new TF1("gaus", "gaus", 1800000000,
+			                    1815000000);
+	h1.Fit(gaus,"R same quite");
+
+	//write to file
+	outFile << riseTime << "," << peakDisplacement << "," << gaus->GetParameter(1) << "," <<
+	    gaus->GetParameter(2) << "," << gaus->GetParError(1) << "," <<
+	    gaus->GetParError(2) <<"," <<  gaus->GetParameter(2)*2.355/ gaus->GetParameter(1) <<","<<
+	    dataP->getBadEvents() << std::endl;
+	
+	histFile->cd();
+	h1.Write();
+	file->Close();
+	histFile->Close();
+
+	std::cout << "Done" << std::endl;
+	//Update thing
+	if(peakDisplacement < 0)
+	    peakDisplacement = 0;
+	else if(peakDisplacement < 100)
+	    peakDisplacement += 50;
+	else
+	{
+	    peakDisplacement = -2;
+	    riseTime += 50;
+	}
+
+    }
+
+    outFile.close();
     gApplication->Terminate();
 }
 
@@ -30,7 +121,7 @@ int main(int argc, char **argv)
       return 1;
    }
 
-   test();
+   WalkData();
 
    theApp.Run();
 

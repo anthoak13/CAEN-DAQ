@@ -20,7 +20,7 @@
 ClassImp(DataProcessor);
 
 DataProcessor::DataProcessor(const TString fileTemplate, const TString meta, const UInt_t numFiles,
-			     const UInt_t headerLength, const UInt_t interpMult)
+			     const UInt_t headerLength)
 {
     //Create a new signalProcessor with the default values
     signalProcessor = new SignalProcessor();
@@ -139,7 +139,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     //Look for pileup
     if(signalProcessor->peaksPastThreshold(trapDeriv) > 1)
     {
-	std::cout << "Failed new method: " << event << std::endl;
+//	std::cout << "Failed new method: " << event << std::endl;
 	_badEvents++;
 	_Q = -1;
     }
@@ -148,8 +148,10 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 	//_Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
 	//			       metaData[f][4] - metaData[f][3]);
         //Charge should be the value of the Trap function at the zero crossing
-	
-	_Q = trap.at(signalProcessor->peakZero(trapDeriv) + signalProcessor->getPeakDisplacement());
+	Int_t loc = signalProcessor->peakZero(trapDeriv) + signalProcessor->getPeakDisplacement();
+	if(loc >= trap.size())
+	    loc = trap.size() -1;
+	_Q = trap.at(loc);
     }
     
     //Do old QDC method
@@ -163,7 +165,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 
 //return 0: sucess
 //return 1: trees wrong size
-Int_t DataProcessor::processFiles(const bool verbose)
+Int_t DataProcessor::processFiles(const bool verbose, const TString fileName)
 {
     //Variables to store channel data
     Float_t Q[_numCh];
@@ -174,7 +176,7 @@ Int_t DataProcessor::processFiles(const bool verbose)
     _badEvents = 0;
 
     //ROOT objects for storage
-    TFile* rootFile = new TFile("macro.root", "RECREATE");
+    TFile* rootFile = new TFile(fileName, "RECREATE");
     TTree* macro_tree = new TTree("macro_tree", "Macro Tree");
     TTree** tmacro_tree = new TTree*[_numCh];
    
@@ -374,7 +376,7 @@ void DataProcessor::populateEventMap()
     //Get the max number of events and event length
     UInt_t maxEvents, fileSize, eventSize;
     rewind(files[0]);
-    fread(&eventSize, 4, 1, files[1]);
+    fread(&eventSize, 4, 1, files[0]);
     fseek(files[0], 0, SEEK_END);
     fileSize = ftell(files[0]);
     maxEvents = fileSize/eventSize;

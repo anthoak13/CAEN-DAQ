@@ -76,12 +76,12 @@ private:
 
 public:
     DataProcessor(const TString fileTemplate, const TString meta, const UInt_t numFiles,
-		  const UInt_t headerLength, const UInt_t interpMult);
+		  const UInt_t headerLength);
     ~DataProcessor();
 
     Int_t processEvent(const UInt_t file, const UInt_t event);
 
-    Int_t processFiles(const bool verbose = false);
+    Int_t processFiles(const bool verbose = false, const TString fileName = "macro.root");
 
     void setMetaData(UInt_t ch, std::vector<Int_t> data) { metaData[ch] = data; };
     std::vector<Int_t> getMetaData(const UInt_t ch) const { return metaData[ch]; };

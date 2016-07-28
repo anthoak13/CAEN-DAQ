@@ -33,7 +33,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     meta = "meta.config";
     numCh = 16;
     headerLength = 6;
-    dataP = new DataProcessor("", "", 0, 0, 0);
+    dataP = new DataProcessor("", "", 0, 0);
     fMain = new TGMainFrame(p, w, h);
     fMain->SetCleanup(kDeepCleanup);
 
@@ -440,19 +440,19 @@ void MainFrame::DoAcquisitionClosed()
 {
     std::cout << "updating DAQ info" << std::endl;
     
-    UpdateDataProcessor(inputTemplate, meta, numCh, headerLength, interpMult);
+    UpdateDataProcessor(inputTemplate, meta, numCh, headerLength);
 
     std::cout << "DAQ updated" << std::endl;
 }
 
-void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t numCh, UInt_t headerLength, UInt_t interpMult)
+void MainFrame::UpdateDataProcessor(TString templateIn, TString meta, UInt_t numCh, UInt_t headerLength)
 {
     delete dataP;
     try {
-	dataP = new DataProcessor(templateIn, meta, numCh, headerLength, interpMult);
+	dataP = new DataProcessor(templateIn, meta, numCh, headerLength);
     } catch(std::exception &e) {
 	std::cout << e.what() << std::endl;
-	dataP = new DataProcessor("", "", 0, 0, 0);
+	dataP = new DataProcessor("", "", 0, 0);
     }
 	
 

@@ -67,9 +67,9 @@ public:
     SignalProcessor(const UInt_t riseTime=3770,   const UInt_t M=3770,
 		    const Double_t flatMult=0.05, const UInt_t zeroOffset=60,
 		    const Int_t  zeroThreshold=-5,const UInt_t interpMult=1,
-		    const Long_t pileHigh=40000,     const Long_t pileLow=-20000,
-		    const UInt_t peakLength=30,   const UInt_t pointsToAvg=0,
-		    const Int_t peakDisplacement=0, const Int_t peakThreshold=0);
+		    const Long_t pileHigh=40000,  const Long_t pileLow=-20000,
+		    const UInt_t peakLength=30,   const Int_t peakDisplacement=0,
+		    const UInt_t pointsToAvg=0,   const Int_t peakThreshold=0);
     ~SignalProcessor();
     
     Int_t getRiseTime() const;

@@ -27,8 +27,8 @@ SignalProcessor::SignalProcessor(const UInt_t riseTime,       const UInt_t M,
 				 const Double_t flatMult,     const UInt_t zeroOffset,
 				 const Int_t  zeroThreshold,  const UInt_t interpMult,
 				 const Long_t pileHigh,       const Long_t pileLow,
-				 const UInt_t peakLength,     const UInt_t pointsToAvg,
-				 const Int_t peakDisplacement,const Int_t peakThreshold)
+				 const UInt_t peakLength,     const Int_t peakDisplacement,
+				 const UInt_t pointsToAvg,    const Int_t peakThreshold)
 {
     _riseTime = riseTime;
     _M = M;

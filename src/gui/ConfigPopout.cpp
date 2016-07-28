@@ -108,6 +108,7 @@ ConfigPopout::ConfigPopout(const TGWindow *p, const TGWindow *main, DataProcesso
 	    break;
 	case 10:
 	    defaultVal = signalP->getPointsToAverage();
+	    break;
 	case 11:
 	    defaultVal = signalP->getPeakThreshold();
 	    break;
