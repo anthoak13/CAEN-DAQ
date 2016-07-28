@@ -60,6 +60,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
 
     fMenuSpectra = new TGPopupMenu(gClient->GetRoot());
     fMenuSpectra->AddEntry("&Calibrate", M_SPECTRA_CALIB);
+    fMenuSpectra->AddEntry("&Reset Calibration", M_SPECTRA_RESET);
 
     fMenuFile->Connect("Activated(Int_t)", "MainFrame", this,
 		       "HandleMenu(Int_t)");
@@ -509,6 +510,11 @@ void MainFrame::HandleMenu(Int_t id)
 	break;
     case M_SPECTRA_CALIB:
 	new ECalibrationPopout(gClient->GetRoot(), fMain, this);
+	break;
+    case M_SPECTRA_RESET:
+	gROOT->ProcessLine(".! rm -f Ecalibration.config");
+	slope = 1;
+	intercept = 0;
 	break;
     }
 	

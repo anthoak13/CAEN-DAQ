@@ -31,7 +31,7 @@ private:
     std::vector<Double_t> raw;
     std::vector<Double_t> calibrated;
 
-    void loadFile();
+
 
     
 public:
@@ -41,5 +41,6 @@ public:
     void DoOk();
     void DoCancel();
     void writeFile();
+    void loadFile();
 };
 #endif

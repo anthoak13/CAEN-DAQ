@@ -124,6 +124,14 @@ void ECalibrationPopout::loadFile()
 	
 	file.close();
     }
+    else
+    {
+	raw.push_back(0);
+	raw.push_back(1);
+	calibrated.push_back(0);
+	calibrated.push_back(1);
+	writeFile();
+    }
 }
 
 void ECalibrationPopout::writeFile()
