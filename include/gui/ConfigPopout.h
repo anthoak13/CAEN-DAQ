@@ -21,7 +21,7 @@ class ConfigPopout {
     RQ_OBJECT("ConfigPopout");
 
 private:
-    static constexpr UInt_t numEntries = 12;
+    static const UInt_t numEntries = 12;
     TGTransientFrame *fMain;
     TGCompositeFrame *f1,*f11, *f2;
     TGGroupFrame *fTrap, *fZero, *fPileup, *fPeak;

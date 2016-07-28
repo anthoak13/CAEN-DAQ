@@ -22,6 +22,7 @@
 #include "TMath.h"
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 
 ClassImp(SignalProcessor);
 //Constructor

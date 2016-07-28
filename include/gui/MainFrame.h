@@ -27,8 +27,8 @@ class MainFrame {
 
 private:
 //constant declarations
+    static const Int_t kHistNumber = 6;
 #ifndef __CINT__
-    static constexpr Int_t kHistNumber = 6;
     const char *drawLabel[kHistNumber] = {
     "signal",
     "trap",
