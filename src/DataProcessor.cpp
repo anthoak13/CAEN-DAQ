@@ -155,7 +155,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     }
     
     //Do old QDC method
-    //_QDC = signalProcessor->QDC(signal, _zero, metaData[f][4] - metaData[f][3]);
+    _QDC = signalProcessor->QDC(signal, _zero, metaData[f][4] - metaData[f][3]);
 
     //Get the timestamp
     _timestamp = header[5];
