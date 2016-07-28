@@ -98,7 +98,7 @@ void ECalibrationPopout::loadFile()
 {
     //Load file
     std::ifstream file;
-    file.open("calibration.config");
+    file.open("Ecalibration.config");
     if(file.is_open())
     {
 	//If the file exists read its content
@@ -116,9 +116,9 @@ void ECalibrationPopout::loadFile()
 	    }
 	    
 	    //get the calibration
-	    raw.push_back(temp.Atoi());
+	    raw.push_back(temp.Atof());
 	    temp.ReadToken(file);
-	    calibrated.push_back(temp.Atoi());
+	    calibrated.push_back(temp.Atof());
 	    i++;
 	}
 	
@@ -132,7 +132,7 @@ void ECalibrationPopout::writeFile()
     std::cout << "Writing calibration" << std::endl;
 #endif
     std::ofstream file;
-    file.open("calibration.config");
+    file.open("Ecalibration.config");
 
     if(!file.is_open())
 	return;

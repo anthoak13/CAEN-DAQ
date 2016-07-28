@@ -487,7 +487,7 @@ void MainFrame::HandleMenu(Int_t id)
 {
     switch(id) {
     case M_FILE_OPEN:
-	std::cout << " Opening DAQ window" << std::endl;
+	//std::cout << " Opening DAQ window" << std::endl;
 	new DAQPopout(gClient->GetRoot(), fMain, this, &inputTemplate, &meta, &numCh, &headerLength);
 	break;
     case M_FILE_LINK:
@@ -497,14 +497,15 @@ void MainFrame::HandleMenu(Int_t id)
 	closeWindow();
 	break;
     case M_FILE_META:
-	std::cout << " Opening meta window" << std::endl;
+	//std::cout << " Opening meta window" << std::endl;
 	new MetaConfigPopout(gClient->GetRoot(), fMain, dataP);
 	break;
     case M_ACQ_START:
 	gROOT->ProcessLine(".! gnome-terminal -x wavedump WaveDumpConfig.txt");
 	break;
     case M_ACQ_CONFIG:
-	new WaveConfigPopout(gClient->GetRoot(), fMain, this);
+	std::cout << "Functionality currently not implimented" << std::endl;
+	//new WaveConfigPopout(gClient->GetRoot(), fMain, this);
 	break;
     case M_SPECTRA_CALIB:
 	new ECalibrationPopout(gClient->GetRoot(), fMain, this);

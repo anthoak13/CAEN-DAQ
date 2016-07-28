@@ -32,7 +32,7 @@ private:
     std::vector<Double_t> calibrated;
 
     void loadFile();
-    void writeFile();
+
     
 public:
     ECalibrationPopout(const TGWindow*, const TGWindow*,  MainFrame*);
@@ -40,5 +40,6 @@ public:
     void CloseWindow();
     void DoOk();
     void DoCancel();
+    void writeFile();
 };
 #endif
