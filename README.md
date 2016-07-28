@@ -15,13 +15,11 @@ A ROOT based GUI for CAEN digitizers and linuxx8664gcc architectures
     $ make
     ```
   2. Run either as interpreted macro or compile GUI
-    - Interpreted: `. ./run.sh`
-      
-    - Compile (Need to add provided libraries to the LD_LIBRARY_PATH enviroment variable)
+    - Compile (run.sh will add required libraries and launch gui)
     
      ```
      $ make build
-     $ LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
+     $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:`pwd`/lib
      $ ./gui.out
      ```
   3. Directory can be cleaned with `$ make clean`
