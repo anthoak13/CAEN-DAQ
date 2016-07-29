@@ -153,7 +153,9 @@ int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const
     }
 
     if(it == signal.end())
-	return 0;
+    {
+	return -1;
+    }
     
     return std::distance(signal.begin(), it);
 }
@@ -451,9 +453,12 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
     return numPeaks;
 }
 
-Float_t SignalProcessor::QDC(const std::vector<int> &signal, const UInt_t start, const UInt_t length) const
+Float_t SignalProcessor::QDC(const std::vector<Long_t> &signal, const UInt_t startIn, const UInt_t lengthIn) const
 {
+    UInt_t start = (signal.size() > startIn) ? startIn : signal.size();
+    UInt_t length = (signal.size() > start + lengthIn) ? lengthIn : signal.size() - start;
     int Q = 0;
+    
     for(int i = 0; i < length; i++)
     {
 	Q += signal[start+i];
