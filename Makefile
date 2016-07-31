@@ -79,6 +79,7 @@ else
 endif
 
 debug: CXXFLAGS += -DDEBUG -g
+test: CXXFLAGS += -DDEBUG -g
 debug: build
 
 #***************#

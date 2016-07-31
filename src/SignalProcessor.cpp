@@ -58,7 +58,7 @@ SignalProcessor::SignalProcessor(const UInt_t riseTime,       const UInt_t M,
 //Destructor
 SignalProcessor::~SignalProcessor()
 {
-    if(_inter != NULL)
+    if(_inter != nullptr)
 	delete _inter;
 }
 
@@ -84,7 +84,7 @@ void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t start
 				 const UInt_t lengthIn) const
 {
     UInt_t start = (startIn >= signal->size()) ? signal->size() - 1 : startIn;
-    UInt_t length = (startIn + lengthIn >= signal->size()) ? signal->size() - 1 : lengthIn;
+    UInt_t length = (start + lengthIn >= signal->size()) ? signal->size() - start - 1 : lengthIn;
 
     trapFilter(&signal->at(start), length);
 
@@ -114,12 +114,12 @@ void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) cons
     //invert the signal
     for(int i = shift; i < length; i++)
     {
-        out[i- shift] = -signal[i+ start];
+        out.at(i- shift) = -signal.at(i+ start);
     }
     
     for(int i = 0; i < (length-shift); i++)
-        out[i] += signal[i+start];
-
+        out.at(i) += signal.at(i+start);
+    
     return out;
     
 }
@@ -150,6 +150,7 @@ int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const
 	
 	//Find the next zero after the threshold
 	while(*it <= 0 && it != signal.end()) { it++; }
+
     }
 
     if(it == signal.end())
@@ -461,9 +462,9 @@ Float_t SignalProcessor::QDC(const std::vector<Long_t> &signal, const UInt_t sta
     
     for(int i = 0; i < length; i++)
     {
-	Q += signal[start+i];
+	Q += signal.at(start+i);
     }
-    return ((Float_t)Q)/length;
+    return Q;
     
 }
 
@@ -562,6 +563,7 @@ void SignalProcessor::load(TString fileName)
 std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &signal) const
 {
     std::vector<double> out;
+    out.push_back(0);
     for(int i = 1; i < signal.size(); i++)
 	out.push_back(signal[i] - signal[i-1]);
 
@@ -571,8 +573,10 @@ std::vector<double> SignalProcessor::nonInterpDeriv(const std::vector<Long_t> &s
 std::vector<double> SignalProcessor::nonInterpSecondDeriv(const std::vector<Long_t> &signal) const
 {
     std::vector<double> out;
+    out.push_back(0);
     for(int i = 1; i < signal.size()-1; i++)
 	out.push_back(signal[i-1] - 2*signal[i] + signal[i+1]);
+    out.push_back(0);
 
     return out;
 }
