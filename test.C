@@ -15,6 +15,7 @@
 #include "TROOT.h"
 #include "TH1.h"
 #include "TF1.h"
+#include "TCanvas.h"
 #include "DataProcessor.h"
 #include "SignalProcessor.h"
 #include <fstream>
@@ -107,6 +108,60 @@ void WalkData()
     gApplication->Terminate();
 }
 
+void PSD()
+{
+    DataProcessor *dataP = new DataProcessor("data_in%i", "meta.config", 1, 6);
+    SignalProcessor* signalP = dataP->getSignalP();
+    signalP->load("signal.config");
+    std::cout << std::endl;
+
+    //open files
+    std::ofstream out;
+    out.open("psd");
+    if(!out.is_open())
+    {
+	std::cout << "psd not open" << std::endl;
+	return;
+    }
+
+
+    //Create hist for psdParam
+    TH1F *hist = new TH1F("hist", "PSD", 1000, 0, 1);
+    TCanvas *c1=new TCanvas("c1");
+
+
+    std::cout << "Starting loop: "<< dataP->getNumEvents() << std::endl;
+    for(int i =0; i < dataP->getNumEvents(); i++)
+    {
+	if(i%10000 == 0 )
+	    std::cout << "At event: " << i << std::endl;
+		
+	dataP->processEvent(0, i);
+	//Float_t shortSig = signalP->QDC(dataP->getSignal(),
+	//				dataP->getZero(),
+	//				5) * 5;
+	//Float_t longSig = signalP->QDC(dataP->getSignal(),
+	////			       dataP->getZero(),
+	//			       15) * 15;
+	//std::cout << "Things processed" << std::endl;
+	if(dataP->getZero() < 0)
+	    continue;
+
+	//stuff
+	//out << shortSig << "," << longSig << std::endl;
+	//Double_t psdParam = (longSig - shortSig)/longSig;
+	//if(psdParam < 0)
+	//    std::cout << i << std::endl;
+	//hist->Fill(psdParam);
+    }
+    std::cout << "Ending loop" << std::endl;
+    
+    hist->Draw("hist");
+    c1->Update();
+    gApplication->Terminate();
+}
+    
+
 #ifdef STANDALONE
 
 int main(int argc, char **argv)
@@ -118,7 +173,8 @@ int main(int argc, char **argv)
       return 1;
    }
 
-   WalkData();
+   
+   PSD();
 
    theApp.Run();
 

@@ -92,7 +92,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     fread(&voltages, 2, getEventLength(), files[f]);
 
     //Get baseline correction
-    bool baseValid = calcBaseline(voltages, f, 0.01);
+    bool baseValid = calcBaseline(voltages, f,    1);
 
     
     //Populate signal
@@ -117,16 +117,20 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     if(baseValid)
     {
 	deriv = signalProcessor->deriv(signal);
+//	for( auto&& i:deriv)
+//	    std::cout << i << std::endl;
 	cfd   =	signalProcessor->CFD(deriv);
 	_zero = signalProcessor->cfdZero(cfd);
 
 	//make sure the zero is valid
-	if( (_zero + metaData[f][4]-metaData[f][3]) > trap.size() )
+	if( (_zero + metaData[f][4]-metaData[f][3]) > trap.size() || _zero <= 0)
 	_zero = metaData[f][3];
     }
     else
 	//baseline was sloped so just use user defined sig start
 	_zero = metaData[f][3];
+
+    std::cout << "zero: " << _zero << std::endl;
 
     
     //Apply trapazoid filter
@@ -154,6 +158,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 	_Q = trap.at(loc);
     }
     
+//_Q = 0;
     //Do old QDC method
     _QDC = signalProcessor->QDC(std::vector<Long_t>(signal.cbegin(), signal.cend()), _zero, metaData[f][4] - metaData[f][3]);
 

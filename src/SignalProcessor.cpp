@@ -107,19 +107,21 @@ void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) cons
  std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal, const UInt_t start,
 					    const UInt_t length, const Int_t shift) const
 {
-    //create output and zero fill
     std::vector<Double_t> out;
-    out.resize(signal.size(), 0);
 
-    //invert the signal
-    for(int i = shift; i < length; i++)
-    {
-        out.at(i- shift) = -signal.at(i+ start);
-    }
-    
-    for(int i = 0; i < (length-shift); i++)
-        out.at(i) += signal.at(i+start);
-    
+    //Zero pad until start of shift
+    for(int i = 0; i < signal.size(); i++)
+	if( i < start + shift)
+	    out.push_back(0);
+	else if (i < start + length + shift)
+	    out.push_back(-signal.at(i - shift));
+	else
+	    out.push_back(0);
+
+    //Add the two signals together
+    for(int i = 0; i < signal.size(); i++)
+	out.at(i) += signal.at(i);
+
     return out;
     
 }
@@ -136,29 +138,34 @@ std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal) 
 //return 0 if no zero is found
 int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const int threshold) const
 {
-    auto it = signal.begin();
-    if(threshold < 0)
-    {
-	//find  the point where the signal first drops below the threshold
-	while(*it > threshold && it != signal.end()) { it++; }
-	
-	//Find the next zero after the threshold
-	while(*it <= 0 && it != signal.end()) { it++; }
-    } else {
-	//Find point where signal first rises above threshold
-	while(*it > threshold && it != signal.end()) { it++; }
-	
-	//Find the next zero after the threshold
-	while(*it <= 0 && it != signal.end()) { it++; }
+    //Lambda's for comparison
+    auto crossedThreshold = [=] (Long_t in){ return ( threshold < 0 && in < threshold ) ||
+				    ( threshold > 0 && in > threshold ); };
+    auto crossedZero = [=] (Long_t in){ return ( threshold < 0 && in > 0 ) ||
+				      ( threshold > 0 && in < 0 ); };
+    
+    if(signal.empty() || threshold == 0)
+	return -1;
 
+    auto it = signal.begin();
+    auto end = signal.end();
+
+    while(!crossedThreshold(*it) && it < end)
+    {
+	it++;
+    }
+    //  std::cout << "Looking for 0" << std::endl;
+    while(!crossedZero(*it) && it < end)
+    {
+	it++;
     }
 
-    if(it == signal.end())
+    if(!(it < end))
     {
 	return -1;
     }
-    
-    return std::distance(signal.begin(), it);
+
+    return end - it + 1;
 }
 
 int SignalProcessor::cfdZero(const std::vector<double> &signal) const
