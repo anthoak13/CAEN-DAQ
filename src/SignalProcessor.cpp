@@ -107,20 +107,18 @@ void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) cons
  std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal, const UInt_t start,
 					    const UInt_t length, const Int_t shift) const
 {
-    std::vector<Double_t> out;
 
-    //Zero pad until start of shift
-    for(int i = 0; i < signal.size(); i++)
-	if( i < start + shift)
-	    out.push_back(0);
-	else if (i < start + length + shift)
-	    out.push_back(-signal.at(i - shift));
-	else
-	    out.push_back(0);
 
-    //Add the two signals together
-    for(int i = 0; i < signal.size(); i++)
-	out.at(i) += signal.at(i);
+    std::vector<Double_t> out = signal;
+
+    for(int i = shift; i < length; i++) 
+    { 
+        out.at(i - shift) = -signal.at(i+ start); 
+    } 
+    
+    for(int i = 0; i < (length-shift); i++) 
+	out.at(i) += signal.at(i+start); 
+
 
     return out;
     
@@ -147,14 +145,14 @@ int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const
     if(signal.empty() || threshold == 0)
 	return -1;
 
-    auto it = signal.begin();
-    auto end = signal.end();
+    auto it = signal.cbegin();
+    auto end = signal.cend();
 
     while(!crossedThreshold(*it) && it < end)
     {
 	it++;
     }
-    //  std::cout << "Looking for 0" << std::endl;
+    std::cout << "Looking for 0 at: " << it - signal.cbegin() << std::endl;
     while(!crossedZero(*it) && it < end)
     {
 	it++;
@@ -165,7 +163,7 @@ int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const
 	return -1;
     }
 
-    return end - it + 1;
+    return it - signal.cbegin() + 1;
 }
 
 int SignalProcessor::cfdZero(const std::vector<double> &signal) const

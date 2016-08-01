@@ -340,7 +340,7 @@ void MainFrame::DoDraw()
 		break;
 	    case 5:
 		output = dataP->getTrapDeriv();
-		hist.push_back(new TH1F("h6", "Raw", output.size(), 0, output.size()));
+		hist.push_back(new TH1F("h6", "Second Deriv", output.size(), 0, output.size()));
 		break;
 	    default:
 		break;

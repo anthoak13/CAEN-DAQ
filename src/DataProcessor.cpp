@@ -92,7 +92,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     fread(&voltages, 2, getEventLength(), files[f]);
 
     //Get baseline correction
-    bool baseValid = calcBaseline(voltages, f,    1);
+    bool baseValid = calcBaseline(voltages, f, 0.01);
 
     
     //Populate signal
@@ -117,8 +117,6 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     if(baseValid)
     {
 	deriv = signalProcessor->deriv(signal);
-//	for( auto&& i:deriv)
-//	    std::cout << i << std::endl;
 	cfd   =	signalProcessor->CFD(deriv);
 	_zero = signalProcessor->cfdZero(cfd);
 
@@ -140,25 +138,28 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     trapDeriv = signalProcessor->pileupTraceToThreshold(std::vector<Long_t>(trap.begin(), trap.begin() + _zero +
 									    metaData[f][4] - metaData[f][3]));
 
+    int peaks = signalProcessor->peaksPastThreshold(trapDeriv);
+    
+
     //Look for pileup
-    if(signalProcessor->peaksPastThreshold(trapDeriv) > 1)
+    if(peaks > 1)
     {
-//	std::cout << "Failed new method: " << event << std::endl;
+	std::cout << "Failed new method: " << event <<
+	    " with " << peaks << "peaks" << std::endl;
 	_badEvents++;
 	_Q = -1;
     }
     else
     {
-	//_Q = signalProcessor->peakFind(trap.begin() + _zero, trap.begin() + _zero +
-	//			       metaData[f][4] - metaData[f][3]);
         //Charge should be the value of the Trap function at the zero crossing
 	Int_t loc = signalProcessor->peakZero(trapDeriv) + signalProcessor->getPeakDisplacement();
+	std::cout << "Sampling at: " << loc << std::endl;
 	if(loc >= trap.size())
 	    loc = trap.size() -1;
+	
 	_Q = trap.at(loc);
     }
     
-//_Q = 0;
     //Do old QDC method
     _QDC = signalProcessor->QDC(std::vector<Long_t>(signal.cbegin(), signal.cend()), _zero, metaData[f][4] - metaData[f][3]);
 
@@ -514,10 +515,6 @@ bool DataProcessor::calcBaseline(UShort_t *sig, const int f, const Double_t tol)
 
     //Check basline for slope
     _baseline = baseValid ? _baseline : sig[metaData[f][2]];
-#ifdef DEBUG
-    //if(!baseValid)
-    //std::cout << "Baseline sloped at: " << _baseline << std::endl;
-#endif
 
     return baseValid;
 }

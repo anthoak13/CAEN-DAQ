@@ -18,6 +18,7 @@
 #include "TCanvas.h"
 #include "DataProcessor.h"
 #include "SignalProcessor.h"
+#include "TMath.h"
 #include <fstream>
 #include <iostream>
 
@@ -128,8 +129,10 @@ void PSD()
     //Create hist for psdParam
     TH1F *hist = new TH1F("hist", "PSD", 1000, 0, 1);
     TCanvas *c1=new TCanvas("c1");
-
-
+    const int startOffset = -2;
+    const int tailStart = 6;
+    const int sigEnd = 10;
+    
     std::cout << "Starting loop: "<< dataP->getNumEvents() << std::endl;
     for(int i =0; i < dataP->getNumEvents(); i++)
     {
@@ -137,28 +140,44 @@ void PSD()
 	    std::cout << "At event: " << i << std::endl;
 		
 	dataP->processEvent(0, i);
-	//Float_t shortSig = signalP->QDC(dataP->getSignal(),
-	//				dataP->getZero(),
-	//				5) * 5;
-	//Float_t longSig = signalP->QDC(dataP->getSignal(),
-	////			       dataP->getZero(),
-	//			       15) * 15;
+	auto max = dataP->getSignal().begin()+2;
+	auto it = max;
+
+	//get the maximum
+	while(it < dataP->getSignal().begin()+25)
+	{
+	    if(*it > *max)
+		max = it;
+
+	    it++;
+	}
+	
+	//std::cout << max << std::endl;
+	int maxLoc  = max - dataP->getSignal().begin();
+
+	Float_t totalSig = signalP->QDC(dataP->getSignal(),
+					maxLoc + startOffset,
+					maxLoc + sigEnd);
+	Float_t tailSig = signalP->QDC(dataP->getSignal(),
+				       maxLoc +  tailStart,
+				       maxLoc + sigEnd);
 	//std::cout << "Things processed" << std::endl;
 	if(dataP->getZero() < 0)
 	    continue;
 
 	//stuff
-	//out << shortSig << "," << longSig << std::endl;
-	//Double_t psdParam = (longSig - shortSig)/longSig;
-	//if(psdParam < 0)
-	//    std::cout << i << std::endl;
-	//hist->Fill(psdParam);
+	out << tailSig << "," << totalSig << std::endl;
+	Double_t psdParam = (totalSig - tailSig)/totalSig;
+	if(psdParam < 0)
+	    std::cout << "Pileup at: " <<  i << std::endl;
+	else
+	    hist->Fill(psdParam);
     }
     std::cout << "Ending loop" << std::endl;
     
     hist->Draw("hist");
     c1->Update();
-    gApplication->Terminate();
+    //gApplication->Terminate();
 }
     
 
