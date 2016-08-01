@@ -83,8 +83,8 @@ Int_t SignalProcessor::getPeakThreshold() const { return _peakThreshold; }
 void SignalProcessor::trapFilter(std::vector<Long_t>* signal, const UInt_t startIn,
 				 const UInt_t lengthIn) const
 {
-    UInt_t start = (startIn >= signal->size()) ? signal->size() - 1 : startIn;
-    UInt_t length = (start + lengthIn >= signal->size()) ? signal->size() - start - 1 : lengthIn;
+    UInt_t start = (startIn < signal->size()) ? startIn : signal->size() - 1;
+    UInt_t length = (start + lengthIn < signal->size()) ? lengthIn : signal->size() - start;
 
     trapFilter(&signal->at(start), length);
 
@@ -463,8 +463,8 @@ UInt_t SignalProcessor::peaksPastThreshold(std::vector<double>::const_iterator s
 
 Float_t SignalProcessor::QDC(const std::vector<Long_t> &signal, const UInt_t startIn, const UInt_t lengthIn) const
 {
-    UInt_t start = (signal.size() > startIn) ? startIn : signal.size();
-    UInt_t length = (signal.size() > start + lengthIn) ? lengthIn : signal.size() - start;
+    UInt_t start = (startIn < signal.size()) ? startIn : signal.size() - 1;
+    UInt_t length = (start + lengthIn < signal.size()) ? lengthIn : signal.size() - start;
     int Q = 0;
     
     for(int i = 0; i < length; i++)

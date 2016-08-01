@@ -130,7 +130,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 	//baseline was sloped so just use user defined sig start
 	_zero = metaData[f][3];
 
-    std::cout << "zero: " << _zero << std::endl;
+    //std::cout << "zero: " << _zero << std::endl;
 
     
     //Apply trapazoid filter
