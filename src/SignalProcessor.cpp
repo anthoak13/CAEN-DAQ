@@ -105,31 +105,40 @@ void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) cons
 
 //Outputs a vector the same size as inputed signal
  std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal, const UInt_t start,
-					    const UInt_t length, const Int_t shift) const
+					    const UInt_t length, const Int_t shift, const Double_t attenuation) const
 {
+    std::vector<Double_t> out;
 
+    //zero pad and attenuate
+    for(int i = 0; i < signal.size(); i++)
+    {
+	if(i < start)
+	    out.push_back(0);
+	else if( i < start + length)
+	    out.push_back(signal.at(i) * attenuation);
+	else
+	    out.push_back(0);
+    }
 
-    std::vector<Double_t> out = signal;
-
-    for(int i = shift; i < length; i++) 
-    { 
-        out.at(i - shift) = -signal.at(i+ start); 
+    //add the inverted signal
+    for(int i = shift + start; i < signal.size(); i++) 
+    {
+	if( i < length)
+	    out.at(i - shift) += -signal.at(i); 
     } 
     
-    for(int i = 0; i < (length-shift); i++) 
-	out.at(i) += signal.at(i+start); 
-
-
     return out;
     
 }
+
 std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal, const Int_t shift) const
 {
-    return CFD(signal, 0, signal.size(), shift);
+    return CFD(signal, 0, signal.size(), shift, 0.80);
 }
+
 std::vector<Double_t> SignalProcessor::CFD(const std::vector<Double_t> &signal) const
 {
-    return CFD(signal, 0, signal.size(), _zeroOffset);
+    return CFD(signal, 0, signal.size(), _zeroOffset, 0.80);
 }
 
 //Gets the next zero crossing after the signal reaches a min or max of threshold (determined by sgn of threshold)

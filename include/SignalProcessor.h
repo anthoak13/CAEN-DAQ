@@ -93,7 +93,7 @@ public:
     Float_t QDC(const std::vector<Long_t> &signal, const UInt_t start, const UInt_t length) const;
 
     std::vector<Double_t> CFD(const std::vector<Double_t> &signal, const UInt_t start,
-			      const UInt_t length, const Int_t shift) const;
+			      const UInt_t length, const Int_t shift, const Double_t attenuation) const;
     std::vector<Double_t> CFD(const std::vector<Double_t> &signal, const Int_t shift) const;
     std::vector<Double_t> CFD(const std::vector<Double_t> &signal) const;
     

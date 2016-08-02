@@ -325,11 +325,11 @@ void MainFrame::DoDraw()
 		break;
 	    case 1:
 		output = dataP->getTrap();
-		hist.push_back( new TH1F("h2", "Trap", output.size(), 0, output.size()));
+		hist.push_back( new TH1F("h2", "Trapezoid Filter", output.size(), 0, output.size()));
 		break;
 	    case 2:
 		output = dataP->getDeriv();
-		hist.push_back(new TH1F("h3", "Deriv", output.size(), 0, output.size()));
+		hist.push_back(new TH1F("h3", "Signal Derivative", output.size(), 0, output.size()));
 		break;
 	    case 3:
 		output = dataP->getCFD();
@@ -337,11 +337,11 @@ void MainFrame::DoDraw()
 		break;
 	    case 4:
 		output = dataP->getRaw();
-		hist.push_back(new TH1F("h5", "Raw", output.size(), 0, output.size()));
+		hist.push_back(new TH1F("h5", "Raw Signal", output.size(), 0, output.size()));
 		break;
 	    case 5:
 		output = dataP->getTrapDeriv();
-		hist.push_back(new TH1F("h6", "Second Deriv", output.size(), 0, output.size()));
+		hist.push_back(new TH1F("h6", "Trapezoid 2nd Derivative", output.size(), 0, output.size()));
 		break;
 	    default:
 		break;
@@ -358,6 +358,7 @@ void MainFrame::DoDraw()
 		hist.back()->SetLineColor((i == 4) ? 6 : i+1);
 		hist.back()->SetLineWidth(2);
 		hist.back()->SetStats(false);
+		hist.back()->GetXaxis()->SetTitle("Sample #");
 		hist.back()->Draw("hist same");
 	    }
 	    
