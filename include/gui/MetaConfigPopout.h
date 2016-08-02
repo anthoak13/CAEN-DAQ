@@ -27,15 +27,17 @@ private:
     TGHorizontalFrame *fTop, *fMiddle, *fButtons;
     TGVerticalFrame *f0, *fLabel, *fRight;
     TGNumberEntryField *fNEntryMeta[4];
-    TGComboBox *fCBChan, *fCBChType;
+    TGComboBox *fCBChan;
+    TGComboBox *fCBChType, *fCBProcessingType;
     
     TGTextButton *bOk;
     Int_t _oldCh;
     DataProcessor *dataP;
     
 #ifndef __CINT__
-    const char *fLabelMeta[5] = {
+    const char *fLabelMeta[6] = {
     "Channel type",
+    "Proccesing type",
     "Baseline start",
     "Baseline end",
     "Signal start",

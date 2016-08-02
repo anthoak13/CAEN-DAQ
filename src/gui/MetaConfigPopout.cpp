@@ -44,25 +44,35 @@ MetaConfigPopout::MetaConfigPopout(const TGWindow *p, const TGWindow *main, Data
     //Loop through and populate middle frames
     TGLayoutHints *fLabelHints = new TGLayoutHints(kLHintsNormal, 2, 2, 3, 7);
     TGLayoutHints *fNumHints   = new TGLayoutHints(kLHintsNormal, 2, 2, 2, 2);
-    for(int  i = 0; i < 5; i++)
+    for(int  i = 0; i < 6; i++)
     {
 	fLabel->AddFrame(new TGLabel(fLabel, fLabelMeta[i]), fLabelHints);
 	if( i == 0)
 	{
 	    fCBChType = new TGComboBox(fRight);
 	    fCBChType->AddEntry("Disabled", 0);
-	    fCBChType->AddEntry("Normal", 1);
-	    fCBChType->AddEntry("TAC", 2);
-	    fCBChType->Resize(75, 20);
+	    fCBChType->AddEntry("Negative", 1);
+	    fCBChType->AddEntry("Positive", 2);
+	    fCBChType->Resize(80, 20);
 	    fCBChType->Select(0);
 	    fRight->AddFrame(fCBChType, fNumHints);
+	}else if( i == 1)
+	{
+	    fCBProcessingType = new TGComboBox(fRight);
+	    fCBProcessingType->AddEntry("ADC", 0);
+	    fCBProcessingType->AddEntry("QDC", 1);
+	    fCBProcessingType->AddEntry("ADC & QDC", 2);
+	    fCBProcessingType->AddEntry("Peak find", 3);
+	    fCBProcessingType->Resize(80, 20);
+	    fCBProcessingType->Select(0);
+	    fRight->AddFrame(fCBProcessingType, fNumHints);
 	}
 	else
 	{
-	    fNEntryMeta[i-1] = new TGNumberEntryField(fRight, -1, 0, TGNumberFormat::EStyle::kNESInteger,
+	    fNEntryMeta[i-2] = new TGNumberEntryField(fRight, -1, 0, TGNumberFormat::EStyle::kNESInteger,
 						      TGNumberFormat::EAttribute::kNEANonNegative);
-	    fNEntryMeta[i-1]->Resize(75, fNEntryMeta[i-1]->GetDefaultHeight());
-	    fRight->AddFrame(fNEntryMeta[i-1], fNumHints);
+	    fNEntryMeta[i-2]->Resize(80, fNEntryMeta[i-2]->GetDefaultHeight());
+	    fRight->AddFrame(fNEntryMeta[i-2], fNumHints);
 	}
     }
 
@@ -115,6 +125,7 @@ void MetaConfigPopout::DoOk()
 	data.push_back(fNEntryMeta[1]->GetNumber());
 	data.push_back(fNEntryMeta[2]->GetNumber());
 	data.push_back(fNEntryMeta[3]->GetNumber());
+	data.push_back(fCBProcessingType->GetSelected());
 	dataP->setMetaData(_oldCh, data);
     }
     CloseWindow();
@@ -131,6 +142,7 @@ void MetaConfigPopout::SelectChannel(Int_t chNum)
 	data.push_back(fNEntryMeta[1]->GetNumber());
 	data.push_back(fNEntryMeta[2]->GetNumber());
 	data.push_back(fNEntryMeta[3]->GetNumber());
+	data.push_back(fCBProcessingType->GetSelected());
 	dataP->setMetaData(_oldCh, data);
     }
 
@@ -141,11 +153,12 @@ void MetaConfigPopout::SelectChannel(Int_t chNum)
     if(chNum < dataP->getNumCh())
 	data = dataP->getMetaData(chNum);
     else
-	data = {0, 0, 0, 0, 0};
+	data = {0, 0, 0, 0, 0, 0};
     
     fCBChType->Select(data[0]);
     fNEntryMeta[0]->SetNumber(data[1]);
     fNEntryMeta[1]->SetNumber(data[2]);
     fNEntryMeta[2]->SetNumber(data[3]);
     fNEntryMeta[3]->SetNumber(data[4]);
+    fCBProcessingType->Select(data[5]);
 }

@@ -74,6 +74,8 @@ private:
 
     bool calcBaseline(UShort_t *voltages, const int f, const Double_t tol);
 
+    Float_t doTrap(UInt_t file);
+
 public:
     DataProcessor(const TString fileTemplate, const TString meta, const UInt_t numFiles,
 		  const UInt_t headerLength);

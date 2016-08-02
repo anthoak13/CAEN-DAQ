@@ -16,6 +16,7 @@
 #include "DataProcessor.h"
 #include "SignalProcessor.h"
 #include "TBenchmark.h"
+#include "TMath.h"
 
 ClassImp(DataProcessor);
 
@@ -97,6 +98,8 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     for( int i = 0; i < getEventLength(); i++)
     {
 	int sig = 0;
+
+	//subract baseline
 	if(metaData[f][0] == 1)
        	    sig = _baseline - voltages[i];
 	else
@@ -112,7 +115,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     }
 
     //Get the derivative and perform cfd if the base is valid
-    if(baseValid)
+    if(baseValid && metaData[f][5] != 3)
     {
 	deriv = signalProcessor->deriv(signal);
 	cfd   =	signalProcessor->CFD(deriv);
@@ -128,38 +131,25 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 
     //std::cout << "zero: " << _zero << std::endl;
 
-    
-    //Apply trapazoid filter
-    signalProcessor->trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
-
-    //Get moving average of the second derivative (used for pileup ID)
-    trapDeriv = signalProcessor->pileupTraceToThreshold(std::vector<Long_t>(trap.begin(), trap.begin() + _zero +
-									    metaData[f][4] - metaData[f][3]));
-
-    int peaks = signalProcessor->peaksPastThreshold(trapDeriv);
-    
-
-    //Look for pileup
-    if(peaks > 1)
+    switch(metaData[f][5])
     {
-	//std::cout << "Failed new method: " << event <<
-	//  " with " << peaks << "peaks" << std::endl;
-	_badEvents++;
-	_Q = -1;
-    }
-    else
-    {
-        //Charge should be the value of the Trap function at the zero crossing
-	Int_t loc = signalProcessor->peakZero(trapDeriv) + signalProcessor->getPeakDisplacement();
-	//std::cout << "Sampling at: " << loc << std::endl;
-	if(loc >= trap.size())
-	    loc = trap.size() -1;
+    case 0: //ADC
+	_Q = doTrap(f);
+	break;
 	
-	_Q = trap.at(loc);
-    }
-    
-    //Do old QDC method
-    _QDC = signalProcessor->QDC(std::vector<Long_t>(signal.cbegin(), signal.cend()), _zero, metaData[f][4] - metaData[f][3]);
+    case 1: //QDC
+	_Q = signalProcessor->QDC(std::vector<Long_t>(signal.cbegin(), signal.cend()), _zero, metaData[f][4] - metaData[f][3]);
+	break;
+
+    case 2: //ADC and QDC
+	_Q = doTrap(f);
+	_QDC = signalProcessor->QDC(std::vector<Long_t>(signal.cbegin(), signal.cend()), _zero, metaData[f][4] - metaData[f][3]);
+	break;
+	
+    case 3: //TAC
+	_Q = *(TMath::LocMax(signal.cbegin(), signal.cend()));
+	break;
+    };
 
     //Get the timestamp
     _timestamp = header[5];
@@ -444,7 +434,7 @@ void DataProcessor::loadMetaData(const UInt_t numFiles)
 
 	//get the meta data
 	std::vector<Int_t> tempVec;
-	for(int i = 0; i < 5; i++)
+	for(int i = 0; i < 6; i++)
 	{
 	    temp.ReadToken(file);
 	    tempVec.push_back(temp.Atoi());
@@ -465,6 +455,7 @@ void DataProcessor::loadMetaData(const UInt_t numFiles)
 	temp.push_back(30);
 	temp.push_back(35);
 	temp.push_back(100);
+	temp.push_back(2);
 	metaData.push_back(temp);
     }
 }
@@ -481,7 +472,7 @@ void DataProcessor::writeMetaData() const
 	return;
 
     //Print header for file
-    file << "# Ch Type BaselineStart BaselineEnd SigStart SigEnd" << std::endl;
+    file << "# Ch Type BaselineStart BaselineEnd SigStart SigEnd ProcessType" << std::endl;
     for(int i = 0; i < metaData.size(); i++)
     {
 	file << i;
@@ -512,4 +503,32 @@ bool DataProcessor::calcBaseline(UShort_t *sig, const int f, const Double_t tol)
 
     return baseValid;
 }
-				 
+
+Float_t DataProcessor::doTrap(UInt_t f)
+{
+    Float_t ret;
+     //Apply trapazoid filter
+    signalProcessor->trapFilter(&trap, _zero, metaData[f][4] - metaData[f][3]);
+
+    //Get moving average of the second derivative (used for pileup ID)
+    trapDeriv = signalProcessor->pileupTraceToThreshold(std::vector<Long_t>(trap.begin(), trap.begin() + _zero +
+									    metaData[f][4] - metaData[f][3]));
+    int peaks = signalProcessor->peaksPastThreshold(trapDeriv);
+    //Look for pileup
+    if(peaks > 1)
+    {
+	_badEvents++;
+	ret = -1;
+    }
+    else
+    {
+        //Charge should be the value of the Trap function at the zero crossing
+	Int_t loc = signalProcessor->peakZero(trapDeriv) + signalProcessor->getPeakDisplacement();
+	if(loc >= trap.size())
+	   ret = -1;
+	else
+	    ret = trap.at(loc);
+    }
+
+    return ret;
+}
