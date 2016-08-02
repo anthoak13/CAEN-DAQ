@@ -152,7 +152,7 @@ int SignalProcessor::zeroAfterThreshold(const std::vector<double> &signal, const
     {
 	it++;
     }
-    std::cout << "Looking for 0 at: " << it - signal.cbegin() << std::endl;
+    //std::cout << "Looking for 0 at: " << it - signal.cbegin() << std::endl;
     while(!crossedZero(*it) && it < end)
     {
 	it++;

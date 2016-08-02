@@ -78,7 +78,6 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     
     //Create a tab widget ***************
     fTab = new TGTab(fMain, 400, 200);
-    fTab->Connect("Selected(Int_t)", "MainFrame", this, "DoTab(Int_t)");
     fLTab = new TGLayoutHints(kLHintsTop | kLHintsLeft, 5, 5, 5, 5);
     
     //Create composite frames for the three tabs
@@ -360,7 +359,7 @@ void MainFrame::DoDraw()
 		hist.back()->Draw("hist same");
 	    }
 	    
-#ifdef DEBUG
+//#ifdef DEBUG
 	    if( i == 1 )
 	    {
 		hist.push_back(new TH1F("h7", "Q val", output.size(), 0, output.size()));
@@ -372,7 +371,7 @@ void MainFrame::DoDraw()
 		hist.back()->SetLineWidth(2);
 		hist.back()->Draw("hist same");
 	    }
-#endif
+//#endif
 	}
     }
     

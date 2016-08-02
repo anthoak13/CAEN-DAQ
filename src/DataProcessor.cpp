@@ -44,21 +44,19 @@ DataProcessor::DataProcessor(const TString fileTemplate, const TString meta, con
     //populate event map
     populateEventMap();
 
-#ifdef DEBUG
     bench = new TBenchmark();
     std::cout << "Making bench: " << bench << std::endl;
-#endif
+
 }
 
 DataProcessor::~DataProcessor()
 {
-#ifdef DEBUG
+
     if(!bench)
     {
-	std::cout << "Bench: " << bench << std::endl;
 	delete bench;
     }
-#endif
+
     writeMetaData();
     
     delete signalProcessor;
@@ -144,8 +142,8 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     //Look for pileup
     if(peaks > 1)
     {
-	std::cout << "Failed new method: " << event <<
-	    " with " << peaks << "peaks" << std::endl;
+	//std::cout << "Failed new method: " << event <<
+	//  " with " << peaks << "peaks" << std::endl;
 	_badEvents++;
 	_Q = -1;
     }
@@ -153,7 +151,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
     {
         //Charge should be the value of the Trap function at the zero crossing
 	Int_t loc = signalProcessor->peakZero(trapDeriv) + signalProcessor->getPeakDisplacement();
-	std::cout << "Sampling at: " << loc << std::endl;
+	//std::cout << "Sampling at: " << loc << std::endl;
 	if(loc >= trap.size())
 	    loc = trap.size() -1;
 	
@@ -242,14 +240,10 @@ Int_t DataProcessor::processFiles(const bool verbose, const TString fileName)
 	{
 	    if(verbose && event%10000 == 0)
 		std::cout << "Processing event: " << event << std::endl;
-#ifdef DEBUG
+
 	    bench->Start("Process");
 	    processEvent(f, event);
 	    bench->Stop("Process");
-#endif
-#ifndef DEBUG
-	    processEvent(f, event);
-#endif
 	    
 	    //Populate arrrays with calculated values
 	    baseline[f] = _baseline;
@@ -297,10 +291,10 @@ Int_t DataProcessor::processFiles(const bool verbose, const TString fileName)
     if(verbose)
 	std::cout << "Done "<< std::endl;
 
-#ifdef DEBUG
+
     Float_t a,b;
     bench->Summary(a,b);
-#endif
+
     if(verbose)
 	std::cout << "skipped " << _badEvents << " bad events." << std::endl;
 
