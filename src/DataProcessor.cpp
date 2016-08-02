@@ -114,7 +114,7 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 	raw.push_back(voltages[i]);
     }
 
-    //Get the derivative and perform cfd if the base is valid
+    //Get the derivative and perform cfd if the base is valid and it isn't a TAC
     if(baseValid && metaData[f][5] != 3)
     {
 	deriv = signalProcessor->deriv(signal);

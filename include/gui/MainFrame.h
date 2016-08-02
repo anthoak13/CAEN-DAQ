@@ -80,9 +80,11 @@ private:
     M_FILE_LINK,
     M_FILE_META,
     M_FILE_EXIT,
+    M_FILE_CONFIG,
 
     M_SPECTRA_CALIB,
-    M_SPECTRA_RESET
+    M_SPECTRA_RESET,
+    M_SPECTRA_SAVE
 };
 
     

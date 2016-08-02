@@ -50,6 +50,7 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fMenuFile = new TGPopupMenu(gClient->GetRoot());
     fMenuFile->AddEntry("&Open...", M_FILE_OPEN);
     fMenuFile->AddEntry("&Relink", M_FILE_LINK);
+    fMenuFile->AddEntry("&Config...", M_FILE_CONFIG);
     fMenuFile->AddEntry("&Meta Config...", M_FILE_META);
     fMenuFile->AddSeparator();
     fMenuFile->AddEntry("&Exit", M_FILE_EXIT);
@@ -59,7 +60,8 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h)
     fMenuAcq->AddEntry("&Config...", M_ACQ_CONFIG);
 
     fMenuSpectra = new TGPopupMenu(gClient->GetRoot());
-    fMenuSpectra->AddEntry("&Calibrate", M_SPECTRA_CALIB);
+    fMenuSpectra->AddEntry("&Save tree", M_SPECTRA_SAVE);
+    fMenuSpectra->AddEntry("&Calibrate...", M_SPECTRA_CALIB);
     fMenuSpectra->AddEntry("&Reset Calibration", M_SPECTRA_RESET);
 
     fMenuFile->Connect("Activated(Int_t)", "MainFrame", this,
@@ -500,12 +502,18 @@ void MainFrame::HandleMenu(Int_t id)
 	//std::cout << " Opening meta window" << std::endl;
 	new MetaConfigPopout(gClient->GetRoot(), fMain, dataP);
 	break;
+    case M_FILE_CONFIG:
+	new ConfigPopout(gClient->GetRoot(), fMain, dataP);
+	break;
     case M_ACQ_START:
 	gROOT->ProcessLine(".! gnome-terminal -x wavedump WaveDumpConfig.txt");
 	break;
     case M_ACQ_CONFIG:
 	std::cout << "Functionality currently not implimented" << std::endl;
 	//new WaveConfigPopout(gClient->GetRoot(), fMain, this);
+	break;
+    case M_SPECTRA_SAVE:
+	gROOT->ProcessLine(".! . ./scripts/saveTree.sh");
 	break;
     case M_SPECTRA_CALIB:
 	new ECalibrationPopout(gClient->GetRoot(), fMain, this);
