@@ -151,6 +151,8 @@ Int_t DataProcessor::processEvent(const UInt_t f, const UInt_t event)
 	break;
     };
 
+    //if(_Q < 0)
+//	std::cout << "Bad event at: " << event << std::endl;
     //Get the timestamp
     _timestamp = header[5];
 

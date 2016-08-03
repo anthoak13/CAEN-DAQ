@@ -95,9 +95,10 @@ void SignalProcessor::trapFilter(Long_t* signal, const UInt_t signalLength) cons
     //Get arrays for processing signal
     setD_kl(signal, signalLength);
     p(signal, signalLength);
+    signal[0] = 0;
     
     //get the modified signal;
-    for(int n = 0; n < signalLength; n++)
+    for(int n = 1; n < signalLength; n++)
     {
 	signal[n] = signal[n-1] + _p[n] + d_kl[n] * _M;
     }

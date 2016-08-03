@@ -19,33 +19,35 @@
 #include "DataProcessor.h"
 #include "SignalProcessor.h"
 #include "TMath.h"
+#include "TGraph.h"
 #include <fstream>
 #include <iostream>
 
 void WalkData()
 {
-    const TString dir = "/home/adam/data/CoHPGe2/";
+    const TString dir = "/home/adam/data/AmBeNaI/";
     //Create DataP
     DataProcessor *dataP = new DataProcessor("data_in%i", "meta.config", 1, 6);
     SignalProcessor* signalP = dataP->getSignalP();
 
-    UInt_t riseTime = 3700;
-    Int_t peakDisplacement = 0;
+    UInt_t riseTime = 10;
+    Int_t peakDisplacement = -4;
     std::ofstream outFile;
     outFile.open(TString(dir + "Efficiency.txt"));
     if(!outFile.is_open())
 	return;
+    
     //loop though and create trees of data
     bool test = true;
-    while(riseTime <= 3800 && peakDisplacement <=100 && test)
+    while(riseTime <= 15 && peakDisplacement <=4 && test)
     {
 	TString fileName = Form(dir + "tree_%i_%i.root", riseTime, peakDisplacement);
 	//update signal P
 	delete signalP;
-	signalP = new SignalProcessor(riseTime, riseTime, 0.05,
-				      60, -5, 1,
-				      40000, -60000, 30,
-				      peakDisplacement, 0, -40000);
+	signalP = new SignalProcessor(riseTime, riseTime, 1.5,
+				      10, -30, 1,
+				      2200, 0, 10,
+				      peakDisplacement, 0, -1000);
 	std::cout << "Processing " << fileName << "... " <<std::endl;
 	dataP->processFiles(true, fileName);
 
@@ -68,8 +70,8 @@ void WalkData()
     
 	//create hist and fill it
 	h1 = TH1F("htemp", "", 1000,
-		  1400000000,
-		  2200000000);
+		  0,
+		  1000000);
 	
 	for(int i = 0; i < numEntries; i++)
 	{
@@ -78,9 +80,9 @@ void WalkData()
 	}
 
 	//Fit with a gausian
-        auto offset = 800000*(riseTime - 3700);
-	TF1 *gaus = new TF1("gaus", "gaus", 1730000000 + offset,
-			                    1745000000 + offset);
+        auto offset = 45000*(riseTime - 10);
+	TF1 *gaus = new TF1("gaus", "gaus", 320000 + offset,
+			                    340000 + offset);
 	h1.Fit(gaus,"R same quite");
 
 	//write to file
@@ -95,12 +97,12 @@ void WalkData()
 	histFile->Close();
 
 	std::cout << "Done" << std::endl;
-	if(peakDisplacement < 100)
-	    peakDisplacement += 20;
+	if(peakDisplacement < 4)
+	    peakDisplacement += 2;
 	else
 	{
-	    peakDisplacement = 0;
-	    riseTime += 10;
+	    peakDisplacement = -4;
+	    riseTime++;
 	}
 
     }
@@ -179,6 +181,49 @@ void PSD()
     c1->Update();
     //gApplication->Terminate();
 }
+
+void genGraphs()
+{
+    DataProcessor *dataP = new DataProcessor("data_in%i", "meta.config", 1, 6);
+    SignalProcessor* signalP = dataP->getSignalP();
+    signalP->load("signal.config");
+    std::cout << std::endl;
+    dataP->processEvent(0, 7);
+
+    //Create canvas
+    TCanvas *canv = new TCanvas("canv", "Pic", 600, 800);
+    canv->Range(0,0,1,1);
+    canv->SetFrameBorderMode(0);
+
+    canv->cd();
+    TPad *pad1 = new TPad("canv_1", "", 0.01, 0.50 , 0.99, 0.99);
+    canv->cd();
+    TPad *pad2 = new TPad("canv_2", "", 0.01, 0.01 , 0.99, 0.50);
+    canv->cd();
+    pad1->Draw();
+    pad2->Draw();
+
+    
+    //Create graph
+    auto rawD = dataP->getRaw();
+    auto data = std::vector<double>(rawD.begin(), rawD.end()) ;
+    auto x = data;
+    x.clear();
+    for(int i = 0; i < data.size(); i++) x.push_back(i);
+    TGraph *raw = new TGraph(data.size(), x.data(), data.data());
+    TGraph *raw2 = new TGraph(*raw);
+    
+    pad1->cd();
+    raw->GetXaxis()->SetLabelOffset(999);
+    raw->Draw("AC");
+    
+    
+    pad2->cd();
+    raw2->SetTitle("");
+    raw2->SetLineWidth(2);
+    raw2->Draw("AC");
+
+}
     
 
 #ifdef STANDALONE
@@ -193,8 +238,8 @@ int main(int argc, char **argv)
    }
 
    
-   PSD();
-
+   //genGraphs();
+   WalkData();
    theApp.Run();
 
    return 0;
