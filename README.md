@@ -14,8 +14,7 @@ A ROOT based GUI for CAEN digitizers and linuxx8664gcc architectures
     $ cd CAEN-DAQ
     $ make
     ```
-  2. Run either as interpreted macro or compile GUI
-    - Compile (run.sh will add required libraries and launch gui)
+  2. Compile (run.sh will add required libraries and launch gui)
     
      ```
      $ make build
