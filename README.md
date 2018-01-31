@@ -1,12 +1,12 @@
 # CAEN-DAQ
 A ROOT based GUI for CAEN digitizers and linuxx8664gcc architectures
 
-##Prerequisites
+## Prerequisites
   - [ROOT](https://root.cern.ch/) either v5 or v6
   - gcc 4.7.x or above (installation directions [here](http://luiarthur.github.io/gccinstall))
   - [Wavedump](http://www.caen.it/csite/CaenProd.jsp?parent=38&idmod=692) (to use data aquision capabilities)
   
-##Building
+## Building
   1. Checkout the git repo and build source
     
     ```
@@ -23,7 +23,7 @@ A ROOT based GUI for CAEN digitizers and linuxx8664gcc architectures
      ```
   3. Directory can be cleaned with `$ make clean`
  
-##Updating
+## Updating
 The repo can be brought to the most recent version with 
 ```
 git fetch origin master
@@ -31,7 +31,7 @@ git reset --hard FETCH_HEAD
 ```
 The source will have to be rebuilt
 
-##License and disclaimer
+## License and disclaimer
 
 CAEN-DAQ licensed under the GNU General Public License v3.0. You have the right to modify and/or redistribute this source code under the terms specified in the license,
 
