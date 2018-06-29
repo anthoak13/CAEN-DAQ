@@ -73,7 +73,7 @@ LDFLAGS = $(shell $(RC) --ldflags) -Llib -lCAENVME -lCAENComm -lCAENDigitizer
 
 #Get proper compiler for TUNL
 ifeq ($(VERSION), 5)
-	CXX = /home/reu/aka30/gcc-4.9.3/bin/g++
+	CXX = ${HOME}/programs/gcc-4.9.4/bin/g++
 else
 	CXX = $(shell $(RC) --cxx)
 endif

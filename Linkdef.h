@@ -20,6 +20,7 @@
 
 // Wavedump and processing class
 #pragma link C++ class DataProcessor+;
+#pragma link C++ class BinaryLoader+;
 #pragma link C++ class SignalProcessor+;
 #pragma link C++ class ChannelConfig+;
 #pragma link C++ class WavedumpConfig+;
