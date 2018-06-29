@@ -18,11 +18,12 @@
 ClassImp(BinaryLoader)
 
 BinaryLoader::BinaryLoader(const TString fileTemplate, const UInt_t numFiles,
-			   const UInt_t headerLength, const TString outFileName)
+			   const TString outFileName)
 {
   _numFiles = numFiles;
-  _headerLength = headerLength;
-  
+  _headerLength = 6;
+  _chMap  = new UInt_t[numFiles];
+  _header = new UInt_t[3];
   if( !loadFiles(fileTemplate))
     throw  std::runtime_error(TString("Can't open files: " + fileTemplate).Data());
   
@@ -31,18 +32,24 @@ BinaryLoader::BinaryLoader(const TString fileTemplate, const UInt_t numFiles,
   //Also includes which channel is in each file
   if(!readRunData())
     throw  std::runtime_error("Can't load information from binary files");
+
   //Files have been successfully loaded and data about run loaded
-  
+  //So now we can initialize the arrays to hold the adc values
+  _adc = new UShort_t*[_numFiles];
+  for(int i = 0; i < _numFiles; i++)
+      _adc[i] = new UShort_t[_eventLength];
+
+
   //Now generate the tree structure to store the events
   outFile = new TFile(outFileName, "RECREATE");
   outTree = new TTree("BinaryTree", "BinaryTree");
   
   //Create header information
-  outTree->Branch("header", &_header, "i/Timestamp:i/TriggerNum:i/EventLength");
+  outTree->Branch("header", _header, "Timestamp/i:TriggerNum/i:EventLength/i");
 
   //Populate the tree with the waveforms
   for(int i = 0; i < numFiles; i++)
-    outTree->Branch(Form("ch_%d", i), _adc[i], Form("s/wave[%d]",_eventLength));
+    outTree->Branch(Form("ch_%d", _chMap[i]), _adc[i], Form("wave[%d]/s",_eventLength));
 		   
 }
 
@@ -50,6 +57,9 @@ BinaryLoader::~BinaryLoader()
 {
   if(_header != nullptr)
     delete _header;
+  if(_chMap != nullptr)
+    delete _chMap;
+
   if(_adc != nullptr)
     {
       for(int i = 0; i < _numFiles; i++)
@@ -92,20 +102,96 @@ bool BinaryLoader::readRunData()
   minEvents = ~minEvents;
 
   //Loop through each file and find the number of events
+
   for(int i = 0; i < _numFiles; i++)
     {
+      UInt_t eventSize, ch;
       rewind(files[i]);
-      UInt_t eventSize = 0;
-      //TODO:This might be readin it in backwards. It's either this or skip one byte and then read in 3
-      fread(&eventSize, 3, 1, files[0]);
-      
 
+      //Read in the size of an event and ch
+      fread(&eventSize, 4, 1, files[0]);     
+      fseek(files[i], 3*4, SEEK_SET);
+      fread(&ch, 4, 1, files[0]);
+      _chMap[i] = ch;
+
+      //Get the file size and caclulate the number of events
+      fseek(files[0], 0, SEEK_END);
+      UInt_t fileSize = ftell(files[0]);
+      
+      //Update the number of events in the run
+      minEvents = (minEvents > fileSize/eventSize) ? 
+	fileSize/eventSize : minEvents;
+      
+      rewind(files[i]);
+      
+      if(i == 0)
+	{
+	  _eventLength = (eventSize - 4*_headerLength)/2;
+	  _eventSize = eventSize;
+	}
     }
+  
+  _numEvents = minEvents;
 
   return true;
 }
 
 void BinaryLoader::writeTree()
 {
+  //_numEvents = 1;
+  for(int ievt = 0; ievt < _numEvents; ievt++)
+    {
+      if(ievt % 10000 == 0)
+	std::cout << Form("Processing event %d of %d", ievt, _numEvents) << std::endl;
+      
+      //Create variables to update along version
+      bool validEvent = true;
+      UInt_t *tempHeader = new UInt_t[_headerLength];
+      fseek(files[0], ievt*_eventSize, SEEK_SET);
+      readHeader(files[0], _header);
+      fseek(files[0], ievt*_eventSize, SEEK_SET);
+      
+      for(int i = 0; i < _numFiles && validEvent; i++)
+	{
+	  //Make sure the events match
+	  readHeader(files[0], tempHeader);
+	  for(int j = 0; j < 3; j++)
+	      validEvent &= (_header[j] == tempHeader[j]);
 
+	  /*std::cout << Form("%d %d\n%d %d\n%d %d",
+			    _header[0], tempHeader[0],
+			    _header[1], tempHeader[1],
+			    _header[2], tempHeader[2])
+			    << std::endl;*/
+	  fread(_adc[i], 2, _eventLength, files[i]);
+
+	}
+
+      if(validEvent)
+	outTree->Fill();
+      else
+	std::cout << "Skipping event " << ievt << std::endl;
+    }
+       
+  outFile->Write();
+  outFile->Close();
+}
+
+void BinaryLoader::readHeader(FILE* file, UInt_t*header)
+{
+  //Get event size
+  UInt_t eventSize;
+  fread(&eventSize, 4, 1, file);     
+  //Seek and get trigger number
+  fseek(file, 4*4, SEEK_CUR);
+  fread(&header[1], 4, 1, file);
+  //Seek and het timestamp
+  fread(&header[0], 4, 1, file);
+  header[2] = (eventSize - _headerLength*4)/2;
+}
+void BinaryLoader::print()
+{
+  std::cout << Form("EventLength: %d\nNumberEvents : %d",
+		    _eventLength, _numEvents)
+	    << std::endl;
 }

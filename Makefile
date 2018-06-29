@@ -104,7 +104,7 @@ $(SO) : $(OBJS) $(ROOTDICO)
 	@$(CXX) $(SOFLAGS) $(LDFLAGS) $^ -o $@
 
 build : $(GUIO) $(SO)
-	@echo "Compiling macro $(GUISCR)"
+	@echo "Compiling macro ${GUISCR}"
 	@$(CXX) -DSTANDALONE -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
 	@echo "Done"
 
@@ -140,6 +140,7 @@ clean:
 	@rm -f $(BUILDDIR)/*.o *.d $(BUILDDIR)/*Dict.* $(SO) $(TARGET)
 	@rm -f $(BUILDDIR)/dict/*.o $(BUILDDIR)/gui/*.o
 	@rm -f *Dict*
+	@rm -f *.rootmap
 	@echo "Done"
 
 # Useful notes for the uninitiated:

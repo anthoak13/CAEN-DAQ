@@ -13,19 +13,25 @@
 //script for trying PSD
 #include "TApplication.h"
 #include "TROOT.h"
-#include "TH1.h"
-#include "TF1.h"
-#include "TCanvas.h"
+
+#include "BinaryLoader.h"
 #include "DataProcessor.h"
-#include "SignalProcessor.h"
-#include "TMath.h"
-#include "TGraph.h"
-#include "TMultiGraph.h"
-#include "TLegend.h"
-#include "TStyle.h"
+
 #include <fstream>
 #include <iostream>
 
+void test()
+{
+
+   BinaryLoader *loader = new BinaryLoader("/data/0/adam/wave%d.dat", 1, "test.root");
+   loader->print();
+   loader->writeTree();
+   //delete loader;
+  
+}
+
+
+#ifdef STANDALONE
 int main(int argc, char **argv)
 {
     TApplication theApp("App", &argc, argv);
@@ -35,11 +41,8 @@ int main(int argc, char **argv)
       return 1;
    }
 
-   gStyle->SetLegendBorderSize(0);   
-   //genGraphs();
-   //NaIPosterGraphs();
-   HPGePosterGraphs();
-   theApp.Run();
+   test();
+
 
    return 0;
 }

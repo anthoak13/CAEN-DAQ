@@ -40,11 +40,14 @@ class BinaryLoader : public TObject
 {
 
  private:
-  UInt_t _eventLength;
-  UInt_t _headerLength;
+  UInt_t _eventSize; //In bytes
+  UInt_t _eventLength; //number of samples
+  UInt_t _headerLength; //number of 32-bit ints in header
   UInt_t _numFiles;
+  UInt_t _numEvents;
   UInt_t *_header; //Timestamp, TriggerNum, EventLength
-  
+  UInt_t *_chMap;
+
   //adc[file][sample]
   UShort_t **_adc; 
   
@@ -62,15 +65,17 @@ class BinaryLoader : public TObject
   //Load the size of each window as well as the 
   bool readRunData();
   
+  void readHeader(FILE*, UInt_t *header);
 
  public:
 
   
   BinaryLoader(const TString fileTemplate, const UInt_t numFiles,
-	       const UInt_t headerLength, const TString outFileName);
+	       const TString outFileName);
   ~BinaryLoader();
 
   void writeTree();
+  void print();
 
   ClassDef(BinaryLoader,0)
 
