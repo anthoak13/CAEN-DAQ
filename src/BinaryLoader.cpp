@@ -109,14 +109,15 @@ bool BinaryLoader::readRunData()
       rewind(files[i]);
 
       //Read in the size of an event and ch
-      fread(&eventSize, 4, 1, files[0]);     
+      fread(&eventSize, 4, 1, files[i]);     
       fseek(files[i], 3*4, SEEK_SET);
-      fread(&ch, 4, 1, files[0]);
+      fread(&ch, 4, 1, files[i]);
       _chMap[i] = ch;
 
+
       //Get the file size and caclulate the number of events
-      fseek(files[0], 0, SEEK_END);
-      UInt_t fileSize = ftell(files[0]);
+      fseek(files[i], 0, SEEK_END);
+      UInt_t fileSize = ftell(files[i]);
       
       //Update the number of events in the run
       minEvents = (minEvents > fileSize/eventSize) ? 
@@ -138,7 +139,7 @@ bool BinaryLoader::readRunData()
 
 void BinaryLoader::writeTree()
 {
-  //_numEvents = 1;
+  //_numEvents = 10;
   for(int ievt = 0; ievt < _numEvents; ievt++)
     {
       if(ievt % 10000 == 0)
@@ -154,15 +155,17 @@ void BinaryLoader::writeTree()
       for(int i = 0; i < _numFiles && validEvent; i++)
 	{
 	  //Make sure the events match
-	  readHeader(files[0], tempHeader);
-	  for(int j = 0; j < 3; j++)
+	  fseek(files[i], ievt*_eventSize, SEEK_SET);
+	  readHeader(files[i], tempHeader);
+	  for(int j = 1; j < 3; j++)
 	      validEvent &= (_header[j] == tempHeader[j]);
 
-	  /*std::cout << Form("%d %d\n%d %d\n%d %d",
-			    _header[0], tempHeader[0],
-			    _header[1], tempHeader[1],
-			    _header[2], tempHeader[2])
-			    << std::endl;*/
+	  /*std::cout << Form("%u %u %d\n%u %u %d\n%u %u %d",
+			    _header[0], tempHeader[0], _header[0]-tempHeader[0],
+			    _header[1], tempHeader[1], _header[1]-tempHeader[1],
+			    _header[2], tempHeader[2], _header[2]-tempHeader[2])
+		    << std::endl << std::endl;
+	  */
 	  fread(_adc[i], 2, _eventLength, files[i]);
 
 	}

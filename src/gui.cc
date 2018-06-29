@@ -9,43 +9,28 @@
 //     http://www.gnu.org/licenses.                                          //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
+#include "MainFrame.h"
 
-//script for trying PSD
-#include "TApplication.h"
-#include "TROOT.h"
-
-#include "BinaryLoader.h"
-#include "DataProcessor.h"
-
-#include <fstream>
-#include <iostream>
-
-void test(TString fileTemplate = "/data/0/adam/wave%d.dat",
-	  Int_t numFiles = 1, TString outFile = "test.root")
+void gui()
 {
-
-  //  std::cout << Form("%s %d %s", fileTemplate.Data(), numFiles, outFile.Data())
-  //	    << std::endl;
-
-   BinaryLoader *loader = new BinaryLoader(fileTemplate, numFiles, outFile);
-   loader->print();
-   loader->writeTree();
-   //delete loader;
-  
+    new MainFrame(gClient->GetRoot(), 400, 220);
 }
 
-
+//Main Program *****************
 #ifdef STANDALONE
-int main(int argc, char *argv[])
+int main(int argc, char **argv)
 {
-  if(argc != 4)
-    {
-      std::cout << "Usage: unpacker dataTempalte numFiles output.root" 
-		<< std::endl;
+    TApplication theApp("App", &argc, argv);
+
+   if (gROOT->IsBatch()) {
+      fprintf(stderr, "%s: cannot run in batch mode\n", argv[0]);
       return 1;
-    }
-  test(argv[1], atoi(argv[2]), argv[3]);
-  
-  return 0;
+   }
+
+   gui();
+
+   theApp.Run();
+
+   return 0;
 }
 #endif
