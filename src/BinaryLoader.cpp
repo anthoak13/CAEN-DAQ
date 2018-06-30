@@ -15,7 +15,6 @@
 
 #include "BinaryLoader.h"
 
-ClassImp(BinaryLoader)
 
 BinaryLoader::BinaryLoader(const TString fileTemplate, const UInt_t numFiles,
 			   const TString outFileName)
@@ -24,6 +23,7 @@ BinaryLoader::BinaryLoader(const TString fileTemplate, const UInt_t numFiles,
   _headerLength = 6;
   _chMap  = new UInt_t[numFiles];
   _header = new UInt_t[3];
+
   if( !loadFiles(fileTemplate))
     throw  std::runtime_error(TString("Can't open files: " + fileTemplate).Data());
   
@@ -56,16 +56,16 @@ BinaryLoader::BinaryLoader(const TString fileTemplate, const UInt_t numFiles,
 BinaryLoader::~BinaryLoader()
 {
   if(_header != nullptr)
-    delete _header;
+    delete[] _header;
   if(_chMap != nullptr)
-    delete _chMap;
+    delete[] _chMap;
 
   if(_adc != nullptr)
     {
       for(int i = 0; i < _numFiles; i++)
 	if(_adc[i] != nullptr)
-	  delete _adc[i];
-      delete _adc;
+	  delete[] _adc[i];
+      delete[] _adc;
     }
   
   if(outFile->IsOpen())
@@ -73,13 +73,6 @@ BinaryLoader::~BinaryLoader()
       outFile->Write();
       outFile->Close();
     }
-  if(outFile != nullptr)
-    delete outFile; 
-  if(outTree != nullptr)
-    delete outTree;
-  
-  
-  
 }
 
 bool BinaryLoader::loadFiles(const TString fileTemplate)

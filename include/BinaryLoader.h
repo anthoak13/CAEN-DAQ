@@ -28,15 +28,15 @@
 #include "TString.h"
 #include "TTree.h"
 #include "TFile.h"
-#include <vector>
 #include <fstream>
-#include <exception>
+#include <stdexcept>
 #include <iostream>
 #endif
+
 #include "TTree.h"
 #include "TFile.h"
 //Class def
-class BinaryLoader : public TObject
+class BinaryLoader
 {
 
  private:
@@ -76,8 +76,6 @@ class BinaryLoader : public TObject
 
   void writeTree();
   void print();
-
-  ClassDef(BinaryLoader,0)
 
 };
 

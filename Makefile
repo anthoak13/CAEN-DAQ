@@ -10,6 +10,26 @@
 # $ make clean
 
 #**** MACRO DEFINITIONS ****#
+###############################
+##### User specified crap #####
+###############################
+
+# Specify the the binary, build, and source directories
+BUILDDIR = build
+BINDIR   = bin
+SRCDIR   = src
+LIBDIR   = lib
+#Need full path for rooot5
+INCLDIR  = $(PWD)/include
+
+#Set the name of the shared library and dictionary
+LIBNAME = CAENGui
+
+
+#################################
+##### System Specified crap #####
+#################################
+
 
 # Get info on ROOT
 RC:=root-config
@@ -19,16 +39,6 @@ TEMP2 = $(subst ., ,$(V))
 VERSION=$(word 1, $(TEMP2))
 ROOTGLIBS = $(shell $(RC) --glibs) -lMathMore
 
-# Specify the the binary, build, and source directories
-BUILDDIR = build
-BINDIR = bin
-SRCDIR = src
-LIBDIR = lib
-
-# Specify header files directory. Note that this must be an absolute
-# path to ensure the ROOT dictionary files can find the headers
-INCLDIR = $(PWD)/include
-
 # Specify all header files
 INCLS = $(INCLDIR)/*.h
 
@@ -36,51 +46,53 @@ INCLS = $(INCLDIR)/*.h
 # Specify all object files (to be built in the build/ directory)
 SRCS = $(wildcard $(SRCDIR)/*.cpp)
 SRCS += $(wildcard $(SRCDIR)/gui/*.cpp)
-TMP = $(patsubst %.cpp,%.o,$(SRCS))
-OBJS = $(subst $(SRCDIR),$(BUILDDIR),$(TMP))
+SRCS += $(wildcard $(SRCDIR)/*.cc)
+
+# Create object files
+OBJS = $(patsubst $(SRCDIR)%, $(BUILDDIR)%, $(filter %.o, $(SRCS:.cpp=.o )))
+
+SO = $(LIBDIR)/lib$(LIBNAME).so
 
 #Gui source and object
-GUISRC = gui.C
-TMP4 = $(patsubst %.C,%.o,$(GUISRC))
+GUISRC = gui.cc
+TMP4 = $(patsubst %.cc,%.o,$(GUISRC))
 GUIO = $(addprefix $(BUILDDIR)/, $(TMP4))
 
 #Test source and object
-TESTSRC = test.C
-TMP5 = $(patsubst %.C,%.o,$(TESTSRC))
+TESTSRC = test.cc
+TMP5 = $(patsubst %.cc,%.o,$(TESTSRC))
 TESTO = $(addprefix $(BUILDDIR)/, $(TMP5))
 
 
 #Get info for dictionary generation
-TMP1 = $(patsubst %.cpp,%.h,$(SRCS))
-ROOTDICH = $(subst src/,$(INCLDIR)/,$(TMP1))
+ROOTDICH = $(patsubst $(SRCDIR)%, $(INCLDIR)%, $(filter %.h, $(SRCS:.cpp=.h )))	
 DICTDIR = $(BUILDDIR)/dict
 ROOTDICT = dictionary
 ROOTDICO = $(DICTDIR)/$(ROOTDICT).o
 ROOTDICSRC = $(DICTDIR)/$(ROOTDICT).cxx
 
-
-
 # Add various compiler flags
-CXXFLAGS = $(shell $(RC) --cflags) -fPIC -std=c++11 -w -I$(INCLDIR) -I$(INCLDIR)/gui
-SOFLAGS = -O -shared -std=c++0x
-
-#Name of generated library
-MYLIB = CAENGui
-SO = $(LIBDIR)/lib$(MYLIB).so
-
-# Add linker flags for CAEN libraries (architecture dependent).
-LDFLAGS = $(shell $(RC) --ldflags) -Llib -lCAENVME -lCAENComm -lCAENDigitizer
+CXXFLAGS = $(shell $(RC) --cflags --libs) -std=c++11 -fPIC -w -I$(INCLDIR) -I$(INCLDIR)/gui
+SOFLAGS  = --shared --std=c++11
+LDFLAGS  = $(shell $(RC) --ldflags --libs) -L$(LIBDIR) -lCAENComm -lCAENDigitizer -lCAENVME
+EXEFLAGS = $(shell $(RC) --cflags --libs) -std=c++11 -w -I$(INCLDIR) -I$(INCLDIR)/gui -L$(LIBDIR) -lCAENComm -lCAENDigitizer -lCAENVME 
 
 #Get proper compiler for TUNL
 ifeq ($(VERSION), 5)
 	CXX = ${HOME}/programs/gcc-4.9.4/bin/g++
+#CXX = /usr/bin/$(shell $(RC) --cxx)
 else
 	CXX = $(shell $(RC) --cxx)
 endif
 
+
 debug: CXXFLAGS += -DDEBUG -g
-test: CXXFLAGS += -DDEBUG -g
-debug: build
+debug: SOFLAGS += -DDEBUG -g
+debug: LDFLAGS += -DDEBUG -g
+
+debug: all
+
+default: all
 
 #***************#
 #**** RULES ****#
@@ -88,30 +100,34 @@ debug: build
 
 #*************************#
 # Rules to build the libraries
-default : $(SO)
-	@echo "Done"
+all: $(SO)  $(BINDIR)/gui $(BINDIR)/test $(BINDIR)/unpacker
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLS)
 	@echo  "Building object file '$@' ..."
-	@$(CXX) -g $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-$(BUILDDIR)/%.o : %.C $(INCLS)
+$(BUILDDIR)/%.o : $(SRCDIR)/%.cc $(INCLS)
 	@echo  "Building object file '$@' ..."
-	@$(CXX) -DSTANDALONE -g $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(SO) : $(OBJS) $(ROOTDICO)
 	@echo "Building shared library"
-	@$(CXX) $(SOFLAGS) $(LDFLAGS) $^ -o $@
+	@$(CXX) $(SOFLAGS) $(LDFLAGS) $(ROOTGLIBS) $^ -o $@
 
-build : $(GUIO) $(SO)
-	@echo "Compiling macro ${GUISCR}"
-	@$(CXX) -DSTANDALONE -g -o gui.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
-	@echo "Done"
+$(BINDIR)/unpacker: $(SRCDIR)/unpacker.cc $(BUILDDIR)/BinaryLoader.o
+	@echo "Building unpacker $@..."
+	@$(CXX) $(CXXFLAGS) -o $@ $^
 
-test: $(TESTO) $(SO)
-	@echo "Compiling test macro $(TESTSCR)"
-	@$(CXX) -DSTANDALONE -g -o test.out $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
-	@echo "Done"
+
+$(BINDIR)/%: $(SRCDIR)/%.cc $(OBJS) $(ROOTDICO)
+	@echo "Building $@..."
+	@$(CXX) $(EXEFLAGS) $(ROOTGLIBS) -DSTANDALONE  -o $@ $^ 
+
+#%(BINDIR)/% :  $(BUILDDIR)/%.o $(SO)
+#	@echo "Linking $@"
+#	@$(CXX) -DSTANDALONE -o $@ $< -l$(MYLIB) $(LDFLAGS) $(ROOTGLIBS)
+
+
 
 #***********************************************#
 # Rules to generate the necessary ROOT dictionary
@@ -141,6 +157,7 @@ clean:
 	@rm -f $(BUILDDIR)/dict/*.o $(BUILDDIR)/gui/*.o
 	@rm -f *Dict*
 	@rm -f *.rootmap
+	@rm -f $(BINDIR)/*
 	@echo "Done"
 
 # Useful notes for the uninitiated:

@@ -10,38 +10,40 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "BinaryLoader.h"
+//script for trying PSD
+#include "TApplication.h"
+#include "TROOT.h"
 
+#include "BinaryLoader.h"
+#include "DataProcessor.h"
 
 #include <fstream>
 #include <iostream>
-#include <stdlib.h>
 
-void unpack(TString fileTemplate = "/data/0/adam/wave%d.dat",
-	  Int_t numFiles = 1, TString outFile = "test.root")
+void test()
 {
 
-  //  std::cout << Form("%s %d %s", fileTemplate.Data(), numFiles, outFile.Data())
-  //	    << std::endl;
-
-   BinaryLoader *loader = new BinaryLoader(fileTemplate, numFiles, outFile);
+   BinaryLoader *loader = new BinaryLoader("/data/0/adam/wave%d.dat", 2, "test.root");
    loader->print();
    loader->writeTree();
-   delete loader;
+   //delete loader;
   
 }
 
 
-int main(int argc, char *argv[])
+#ifdef STANDALONE
+int main(int argc, char **argv)
 {
-  if(argc != 4)
-    {
-      std::cout << "Usage: unpacker dataTempalte numFiles output.root" 
-		<< std::endl;
-      return 1;
-    }
-  unpack(argv[1], atoi(argv[2]), argv[3]);
-  
-  return 0;
-}
+    TApplication theApp("App", &argc, argv);
 
+   if (gROOT->IsBatch()) {
+      fprintf(stderr, "%s: cannot run in batch mode\n", argv[0]);
+      return 1;
+   }
+
+   test();
+
+
+   return 0;
+}
+#endif
